@@ -1,103 +1,137 @@
-import Image from "next/image";
+'use client'
+
+import { EventTimeline } from '@/components/calender'
+import { DJLineup } from '@/components/djLineUp'
+import { VibesGallery } from '@/components/galary'
+import HeroCarousel from '@/components/HeroCarousel'
+import SongCarousel from '@/components/songCarousel'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0 }
+}
+
+// const djs = [
+//   {
+//     name: 'DJ Tempo',
+//     image: '/assets/dj1.jpg',
+//     instagram: 'https://instagram.com/djtempo',
+//     spotify: 'https://spotify.com/djtempo'
+//   },
+//   {
+//     name: 'Luna Bass',
+//     image: '/assets/dj2.jpg',
+//     instagram: 'https://instagram.com/lunabass',
+//     spotify: 'https://spotify.com/lunabass'
+//   },
+//   {
+//     name: 'Groove Saint',
+//     image: '/assets/dj3.jpg',
+//     instagram: 'https://instagram.com/groovesaint',
+//     spotify: 'https://spotify.com/groovesaint'
+//   }
+// ]
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="bg-black text-white font-sans">
+      <HeroCarousel />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Event Section */}
+      <motion.section
+        className="text-center py-16 px-4"
+        variants={fadeIn}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-4xl mb-4 font-heading">Next Event</h2>
+        <p className="text-xl mb-2 font-body">Friday, July 12, 2025</p>
+        <p className="mb-2 font-body">Warehouse 23, Lagos</p>
+        <p className="mb-6 font-body">Headlined by the founders of House Arrest + Guest DJs</p>
+        <Link
+          href="https://tix.com"
+          target="_blank"
+          className="bg-white text-black px-6 py-3 font-semibold rounded hover:bg-gray-300 font-body"
+        >
+          Buy Tickets
+        </Link>
+      </motion.section>
+<EventTimeline />
+   {/* DJ Lineup Section */}
+      <motion.section
+        className="py-16 px-6 max-w-5xl mx-auto text-center"
+        variants={fadeIn}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+       <DJLineup/>
+      
+      </motion.section>
+      {/* Song Carousel Section */}
+      <motion.section
+        className="py-16 px-4"
+        variants={fadeIn}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-3xl text-center font-heading mb-6">New Releases</h2>
+        <SongCarousel />
+      </motion.section>
+
+   
+
+      {/* About Section */}
+      <motion.section
+        className="py-16 px-6 max-w-4xl mx-auto text-center"
+        variants={fadeIn}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-3xl font-heading mb-4">About House Arrest</h2>
+        <p className="text-lg font-body text-gray-300">
+          House Arrest is more than a rave — it’s a movement. Founded by DJs who live and breathe house music,
+          our events bring together underground sounds, electric vibes, and the freedom to lose yourself on the dance floor.
+        </p>
+      </motion.section>
+
+      {/* QR Code Scanner Section */}
+      <motion.section
+        className="py-16 px-6 text-center"
+        variants={fadeIn}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-3xl font-heading mb-4">Scan Entry QR Code</h2>
+        <p className="text-lg font-body mb-6 text-gray-300">Coming soon: scan your ticket for quick access</p>
+        <div className="flex justify-center">
+          <Image
+            src="/assets/qrimg2.jpg"
+            alt="QR Scanner Placeholder"
+            width={250}
+            height={250}
+            className="rounded-lg border border-white"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </motion.section>
+      <VibesGallery/>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-center py-8 text-gray-400 font-body">
+        <p>&copy; {new Date().getFullYear()} House Arrest. All rights reserved.</p>
       </footer>
-    </div>
-  );
+    </main>
+  )
 }
