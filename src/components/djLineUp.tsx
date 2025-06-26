@@ -45,7 +45,7 @@ export function DJLineup() {
   ];
 
   return (
-    <section className="py-16 px-6 bg-black text-white text-center">
+    <section className="py-16  md:px-6 bg-black text-white text-center">
       <h2 className="text-3xl font-heading mb-10">Meet the DJ's</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {djs.map((dj, i) => (
