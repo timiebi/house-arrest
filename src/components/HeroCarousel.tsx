@@ -14,7 +14,7 @@ const slides: Slide[] = [
   { src: '/assets/dj7.jpg', heading: 'Rave Hard, Live Free', sub: 'No rules. Just rhythm.' },
   { src: '/assets/dj9.jpg', heading: 'Back-to-back Anthems', sub: 'Feel the flow all night.' },
 ]
-
+ 
 export default function HeroCarousel() {
   const autoplay = useRef(
     Autoplay({
