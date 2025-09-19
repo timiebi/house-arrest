@@ -6,6 +6,7 @@ import { VibesGallery } from "@/components/galary";
 import HeroCarousel from "@/components/HeroCarousel";
 import NextEvent from "@/components/nextevent";
 import QRScanner from "@/components/QRCode";
+import { ScrollUpButton } from "@/components/scrollUpButton";
 import SongCarousel from "@/components/songCarousel";
 import { motion } from "framer-motion";
 // import Image from "next/image";
@@ -21,7 +22,7 @@ export default function Home() {
          <HeroCarousel />
 
          {/* Event Section */}
-        <NextEvent/>
+         <NextEvent />
 
          <EventTimeline />
 
@@ -97,7 +98,7 @@ export default function Home() {
          </motion.section>
 
          {/* QR Scanner Section */}
-        <QRScanner/>
+         <QRScanner />
 
          <VibesGallery />
 
@@ -105,6 +106,7 @@ export default function Home() {
          <footer className="bg-gray-900 text-center py-10 text-gray-500 font-body">
             <p>&copy; {new Date().getFullYear()} House Arrest. All rights reserved.</p>
          </footer>
+         <ScrollUpButton scrollHeight={200} />
       </main>
    );
 }

@@ -14,7 +14,7 @@ const songs = [
    {
       title: "Deep Vibe",
       artist: "Lunar Beats",
-      image: "/assets/dj2.jpg",
+      image: "/assets/dj13.jpg",
       link: "https://open.spotify.com/track/2",
    },
    {
@@ -26,7 +26,7 @@ const songs = [
    {
       title: "Midnight Sky",
       artist: "Aurora Wave",
-      image: "/assets/dj3.jpg",
+      image: "/assets/dj12.jpg",
       link: "https://open.spotify.com/track/4",
    },
    {

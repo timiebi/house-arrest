@@ -29,7 +29,7 @@ export function DJLineup() {
       {
          name: "Groove Saint",
          bio: "Soulful sets blending house and funk.",
-         img: "/assets/dj3.jpg",
+         img: "/assets/dj10.jpg",
          instagram: "https://instagram.com/groovesaint",
          spotify: "https://open.spotify.com/artist/3",
       },

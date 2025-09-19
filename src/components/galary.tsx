@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { RowsPhotoAlbum } from "react-photo-album";
 import "react-photo-album/rows.css";
 
@@ -10,20 +11,50 @@ const fadeIn = {
 };
 
 export function VibesGallery() {
-  const photos = [
-    { src: "/assets/dj1.jpg", width: 1, height: 1 },
-    { src: "/assets/dj2.jpg", width: 1, height: 1 },
-    { src: "/assets/dj3.jpg", width: 1, height: 1 },
-    { src: "/assets/dj1.jpg", width: 1, height: 1 },
-    { src: "/assets/dj2.jpg", width: 1, height: 1 },
-    { src: "/assets/dj3.jpg", width: 1, height: 1 },
-     { src: "/assets/dj1.jpg", width: 1, height: 1 },
-    { src: "/assets/dj2.jpg", width: 1, height: 1 },
-    { src: "/assets/dj3.jpg", width: 1, height: 1 },
-    { src: "/assets/dj1.jpg", width: 1, height: 1 },
-    { src: "/assets/dj2.jpg", width: 1, height: 1 },
-    { src: "/assets/dj3.jpg", width: 1, height: 1 },
+  const [photos, setPhotos] = useState<{ src: string; width: number; height: number }[]>([]);
+
+  const imageUrls = [
+    "/assets/dj1.jpg",
+    "/assets/dj16.jpg",
+    "/assets/dj18.jpg",
+    "/assets/dj24.png",
+    "/assets/dj25.png",
+    "/assets/dj26.png",
+    "/assets/dj12.jpg",
+    "/assets/dj14.jpg",
+    "/assets/dj15.jpg",
+    "/assets/dj2.jpg",
+    "/assets/dj17.jpg",
+    "/assets/dj19.jpg",
+    "/assets/dj23.jpg",
+    "/assets/dj3.jpg",
+    "/assets/dj10.jpg",
+    "/assets/dj22.jpg",
   ];
+
+  useEffect(() => {
+    const loadImages = async () => {
+      const loadedPhotos = await Promise.all(
+        imageUrls.map(
+          (url) =>
+            new Promise<{ src: string; width: number; height: number }>((resolve) => {
+              const img = new Image();
+              img.src = url;
+              img.onload = () => {
+                resolve({ src: url, width: img.naturalWidth, height: img.naturalHeight });
+              };
+              img.onerror = () => {
+                // Skip broken images
+                resolve({ src: url, width: 1, height: 1 });
+              };
+            })
+        )
+      );
+      setPhotos(loadedPhotos);
+    };
+
+    loadImages();
+  }, []);
 
   return (
     <motion.section
@@ -52,12 +83,7 @@ export function VibesGallery() {
 
       {/* Photo Album */}
       <div className="max-w-6xl mx-auto">
-        <RowsPhotoAlbum
-          photos={photos}
-          spacing={10}
-          targetRowHeight={260}
-          
-        />
+        <RowsPhotoAlbum photos={photos} spacing={10} targetRowHeight={260} />
       </div>
 
       {/* Footer Tag */}

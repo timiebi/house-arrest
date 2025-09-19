@@ -8,11 +8,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 type Slide = { src: string; heading: string; sub?: string }
 
 const slides: Slide[] = [
-  { src: '/assets/dj1.jpg', heading: 'Welcome to House Arrest', sub: 'Underground energy, pure house.' },
-  { src: '/assets/dj2.jpg', heading: 'Where House Music Lives', sub: 'Beats. Lights. Family.' },
-  { src: '/assets/dj3.jpg', heading: 'Feel the Vibe, Own the Night', sub: 'Lose yourself. Find your people.' },
-  { src: '/assets/dj1.jpg', heading: 'Rave Hard, Live Free', sub: 'No rules. Just rhythm.' },
-  { src: '/assets/dj2.jpg', heading: 'Back-to-back Anthems', sub: 'Feel the flow all night.' },
+   { src: '/assets/dj4.jpeg', heading: 'Where House Music Lives', sub: 'Beats. Lights. Family.' },
+  { src: '/assets/dj6.jpg', heading: 'Welcome to House Arrest', sub: 'Underground energy, pure house.' },
+  { src: '/assets/dj24.png', heading: 'Feel the Vibe, Own the Night', sub: 'Lose yourself. Find your people.' },
+  { src: '/assets/dj7.jpg', heading: 'Rave Hard, Live Free', sub: 'No rules. Just rhythm.' },
+  { src: '/assets/dj9.jpg', heading: 'Back-to-back Anthems', sub: 'Feel the flow all night.' },
 ]
 
 export default function HeroCarousel() {
