@@ -19,8 +19,8 @@ export default function HeroCarousel() {
   const autoplay = useRef(
     Autoplay({
       delay: 3000,
-      stopOnInteraction: true,
-      stopOnMouseEnter: true,
+      stopOnInteraction: true, 
+      stopOnMouseEnter: true, 
     })
   )
 
