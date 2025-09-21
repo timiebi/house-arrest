@@ -8,12 +8,33 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 type Slide = { src: string; heading: string; sub?: string }
 
 const slides: Slide[] = [
-   { src: '/assets/dj4.jpeg', heading: 'Where House Music Lives', sub: 'Beats. Lights. Family.' },
-  { src: '/assets/dj6.jpg', heading: 'Welcome to House Arrest', sub: 'Underground energy, pure house.' },
-  { src: '/assets/dj24.png', heading: 'Feel the Vibe, Own the Night', sub: 'Lose yourself. Find your people.' },
-  { src: '/assets/dj7.jpg', heading: 'Rave Hard, Live Free', sub: 'No rules. Just rhythm.' },
-  { src: '/assets/dj9.JPG', heading: 'Back-to-back Anthems', sub: 'Feel the flow all night.' },
+  { 
+    src: '/assets/dj4.jpeg', 
+    heading: 'Sigag Lauren', 
+    sub: 'DJ • Producer • House Music Visionary' 
+  },
+  { 
+    src: '/assets/dj6.jpg', 
+    heading: 'Beats That Move You', 
+    sub: 'Signature sound, unforgettable nights.' 
+  },
+  { 
+    src: '/assets/dj24.png', 
+    heading: 'Global Energy, Local Roots', 
+    sub: 'From Lagos to the world.' 
+  },
+  { 
+    src: '/assets/dj7.jpg', 
+    heading: 'Producing the Future of House', 
+    sub: 'Innovative sounds, crafted with soul.' 
+  },
+  { 
+    src: '/assets/dj9.JPG', 
+    heading: 'Live. Loud. Limitless.', 
+    sub: 'Experience the Sigag Lauren vibe.' 
+  },
 ]
+
  
 export default function HeroCarousel() {
   const autoplay = useRef(

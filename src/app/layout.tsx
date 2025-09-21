@@ -17,9 +17,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "House Arrest",
-  description: "Experience the ultimate house rave with DJs and live shows.",
+  title: "Sigag Lauren",
+  description:
+    "Sigag Lauren — DJ, music producer, and performer. Dive into immersive house sets, cutting-edge productions, and unforgettable live shows.",
 };
+
 
 export default function RootLayout({
   children,

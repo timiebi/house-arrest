@@ -7,37 +7,37 @@ import { useCallback, useEffect, useState } from "react";
 const songs = [
    {
       title: "Sunset Groove",
-      artist: "DJ Nova",
+      artist: "Sigag Lauren",
       image: "/assets/dj3.jpg",
       link: "https://open.spotify.com/track/1",
    },
    {
       title: "Deep Vibe",
-      artist: "Lunar Beats",
+      artist: "Sigag Lauren",
       image: "/assets/dj13.jpg",
       link: "https://open.spotify.com/track/2",
    },
    {
       title: "Night Pulse",
-      artist: "Echo Flow",
+      artist: "Sigag Lauren",
       image: "/assets/dj1.jpg",
       link: "https://open.spotify.com/track/3",
    },
    {
       title: "Midnight Sky",
-      artist: "Aurora Wave",
+      artist: "Sigag Lauren ft Ace",
       image: "/assets/dj12.jpg",
       link: "https://open.spotify.com/track/4",
    },
    {
       title: "Ocean Lights",
-      artist: "Neon Tide",
+      artist: "Sigag Lauren",
       image: "/assets/dj2.jpg",
       link: "https://open.spotify.com/track/5",
    },
    {
       title: "Bass Horizon",
-      artist: "Pulse Driver",
+      artist: "Sigag Lauren",
       image: "/assets/dj1.jpg",
       link: "https://open.spotify.com/track/6",
    },
@@ -212,7 +212,7 @@ export default function SongCarousel() {
             </button>
 
             {/* dots */}
-            <div className="flex justify-center items-center gap-2 mt-8">
+            <div className="flex justify-center items-center gap-2 md:mt-8">
                {scrollSnaps.map((_, i) => (
                   <button
                      key={i}

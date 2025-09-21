@@ -18,7 +18,7 @@ export default function NextEvent() {
       transition={{ duration: 0.8, ease: 'easeOut' }}
       viewport={{ once: true }}
     >
-      {/* subtle glowing backdrop */}
+      {/* Subtle glowing backdrop */}
       <div className="absolute inset-0 -z-10">
         <div className="w-full h-full bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.05)_0%,transparent_70%)]" />
       </div>
@@ -36,14 +36,15 @@ export default function NextEvent() {
         Warehouse 23, Lagos
       </p>
       <p className="mb-8 max-w-xl mx-auto text-gray-400 font-body leading-relaxed text-sm sm:text-base md:text-lg">
-        Headlined by the founders of <span className="text-pink-400 font-semibold">House Arrest</span> + Guest DJs
+        Join <span className="text-pink-400 font-semibold">Sigag Lauren</span> live with special guest DJs for an
+        unforgettable night of house, energy, and rhythm.
       </p>
 
       {/* CTA button */}
       <Link
         href="https://tix.com"
         target="_blank"
-        className="inline-block bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white px-8 py-3 sm:px-10 sm:py-4 rounded-xl font-semibold hover:scale-105 transition-transform duration-300 shadow-lg"
+        className="cursor-pointer inline-block bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white px-8 py-3 sm:px-10 sm:py-4 rounded-xl font-semibold hover:scale-105 transition-transform duration-300 shadow-lg"
       >
         Buy Tickets
       </Link>

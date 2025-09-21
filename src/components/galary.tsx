@@ -12,6 +12,8 @@ const fadeIn = {
 
 export function VibesGallery() {
   const [photos, setPhotos] = useState<{ src: string; width: number; height: number }[]>([]);
+  const [showAll, setShowAll] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const imageUrls = [
     "/assets/dj1.jpg",
@@ -44,7 +46,6 @@ export function VibesGallery() {
                 resolve({ src: url, width: img.naturalWidth, height: img.naturalHeight });
               };
               img.onerror = () => {
-                // Skip broken images
                 resolve({ src: url, width: 1, height: 1 });
               };
             })
@@ -54,11 +55,18 @@ export function VibesGallery() {
     };
 
     loadImages();
+
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  const displayedPhotos = isMobile && !showAll ? photos.slice(0, 5) : photos;
 
   return (
     <motion.section
-      className="relative py-28 px-6 text-center bg-gradient-to-b from-black via-gray-950 to-black"
+      className="relative py-15 md:py-28 px-6 text-center bg-gradient-to-b from-black via-gray-950 to-black"
       variants={fadeIn}
       initial="hidden"
       whileInView="visible"
@@ -77,14 +85,28 @@ export function VibesGallery() {
 
       {/* Subtitle */}
       <p className="text-gray-400 font-body text-lg max-w-2xl mx-auto mb-12">
-        A glimpse into the energy, the music, and the people that make{" "}
-        <span className="text-pink-400 font-semibold">House Arrest</span> unforgettable.
+        Step inside the world of{" "}
+        <span className="text-pink-400 font-semibold">Sigag Lauren</span> — from electrifying DJ sets 
+        to the unforgettable energy that defines the nights. These moments capture the beats, the lights, 
+        and the people who make it all come alive.
       </p>
 
       {/* Photo Album */}
       <div className="max-w-6xl mx-auto">
-        <RowsPhotoAlbum photos={photos} spacing={10} targetRowHeight={260} />
+        <RowsPhotoAlbum photos={displayedPhotos} spacing={10} targetRowHeight={260} />
       </div>
+
+      {/* View More button for mobile */}
+      {isMobile && photos.length > 5 && (
+        <div className="mt-8">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="px-5 py-2 rounded-full bg-gray-800/70 border border-gray-700 text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition"
+          >
+            {showAll ? "View Less" : "View More"}
+          </button>
+        </div>
+      )}
 
       {/* Footer Tag */}
       <div className="mt-14 inline-block px-4 py-2 rounded-full bg-gray-800/60 border border-gray-700 text-sm text-gray-300 tracking-wide">
