@@ -9,6 +9,7 @@ import QRScanner from "@/components/QRCode";
 import { ScrollUpButton } from "@/components/scrollUpButton";
 import SongCarousel from "@/components/songCarousel";
 import { motion } from "framer-motion";
+import Link from "next/link";
 // import Image from "next/image";
 
 const fadeIn = {
@@ -62,7 +63,7 @@ export default function Home() {
             <SongCarousel />
          </motion.section>
 
-{/* 
+         {/* 
 <motion.section
   className="relative py-16 md:py-28 px-4 md:px-6 max-w-5xl mx-auto text-center"
   variants={fadeIn}
@@ -98,7 +99,6 @@ export default function Home() {
   </p>
 </motion.section> */}
 
-
          {/* QR Scanner Section */}
          <QRScanner />
 
@@ -106,7 +106,8 @@ export default function Home() {
 
          {/* Footer */}
          <footer className="bg-gray-900 text-center py-10 text-gray-500 font-body">
-            <p>&copy; {new Date().getFullYear()} Sigag Lauren. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Sigag Lauren. All rights reserved.</p> |
+            <Link href="/login">Admin</Link>
          </footer>
          <ScrollUpButton scrollHeight={200} />
       </main>

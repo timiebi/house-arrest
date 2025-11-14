@@ -1,22 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --font-heading: var(--font-sora);
-  --font-body: var(--font-inter);
+   --font-heading: var(--font-sora);
+   --font-body: var(--font-inter);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* Optional dark mode colors */
-  }
+   :root {
+      /* Optional dark mode colors */
+   }
 }
 
 body {
-  font-family: "inter", sans-serif !important;
-  background-color: #000; 
-  color: #fff;
+   font-family: "inter", sans-serif !important;
+   background-color: #000;
+   color: #fff;
+   overscroll-behavior-y: contain;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: "sora", sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+   font-family: "sora", sans-serif;
 }

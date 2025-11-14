@@ -1,79 +1,181 @@
-"use client";
+"use client"
 
+import { supabase } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export function DJLineup() {
-   return (
-      <section className="relative py-16 md:py-28 px-6 bg-gradient-to-b from-black via-gray-950 to-black text-white overflow-hidden">
-         {/* Glow / Aura */}
-         <div className="absolute inset-0 -z-10">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] bg-pink-600/20 blur-3xl rounded-full" />
-         </div>
+  const [profile, setProfile] = useState<any>(null);
 
-         {/* Content */}
-         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-            {/* Image */}
-            <motion.div
-               initial={{ opacity: 0, scale: 0.9 }}
-               whileInView={{ opacity: 1, scale: 1 }}
-               transition={{ duration: 0.8 }}
-               viewport={{ once: true }}
-               className="relative rounded-3xl overflow-hidden shadow-xl border border-white/10"
-            >
-               <img
-                  src="/assets/dj1.jpg" // Replace with his press image
-                  alt="Sigag Lauren"
-                  className="w-full h-[450px] md:h-[550px] object-cover"
-               />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-            </motion.div>
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("email", "kosutimiebinicholas@gmail.com") // fetch by email, not id
+        .single();
 
-            {/* Text Info */}
-            <motion.div
-               initial={{ opacity: 0, y: 40 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               transition={{ duration: 0.7 }}
-               viewport={{ once: true }}
-               className="text-center md:text-left"
-            >
-               <h2 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mb-6">
-                  Sigag Lauren
-               </h2>
-               <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8">
-                  Nigerian-born DJ & producer redefining EDM with Afropop and House influences. 
-                  From Lagos to the world, Sigag blends pulsating beats and soulful melodies, 
-                  creating electrifying moments on every stage.
-               </p>
+      if (error) {
+        console.warn("Failed to fetch profile:", error.message);
+        return;
+      }
 
-               {/* Socials */}
-               <div className="flex gap-6 justify-center md:justify-start">
-                  <a
-                     href="https://instagram.com/sigaglauren"
-                     target="_blank"
-                     className="text-gray-400 hover:text-pink-400 transition"
-                  >
-                     <InstagramIcon />
-                  </a>
-                  <a
-                     href="https://open.spotify.com/artist/3t7U5HMiY2C6AnQ7BBTkdn"
-                     target="_blank"
-                     className="text-gray-400 hover:text-green-400 transition"
-                  >
-                     <SpotifyIcon />
-                  </a>
-                  <a
-                     href="https://music.apple.com/ng/artist/sigag-lauren/1437272095"
-                     target="_blank"
-                     className="text-gray-400 hover:text-red-400 transition"
-                  >
-                     <AppleMusicIcon />
-                  </a>
-               </div>
-            </motion.div>
-         </div>
-      </section>
-   );
+      setProfile(data);
+    } catch (err) {
+      console.error("Unexpected error fetching profile:", err);
+    }
+  };
+
+  fetchProfile();
+}, []);
+
+
+  if (!profile) return <p className="text-center text-gray-400 mt-20">Loading...</p>;
+
+  return (
+    <section className="relative py-16 md:py-28 px-6 bg-gradient-to-b from-black via-gray-950 to-black text-white overflow-hidden">
+      {/* Glow / Aura */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] bg-pink-600/20 blur-3xl rounded-full" />
+      </div>
+
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        {/* Image */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden shadow-xl border border-white/10"
+        >
+          <img
+            src={profile.profile_image_url || "/assets/dj1.jpg"}
+            alt={profile.name || "DJ"}
+            className="w-full h-[450px] md:h-[550px] object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+        </motion.div>
+
+        {/* Text Info */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          viewport={{ once: true }}
+          className="text-center md:text-left"
+        >
+          <h2 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mb-6">
+            {profile.name || "Sigag Lauren"}
+          </h2>
+          <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8">
+            {profile.about ||
+              "DJ & producer redefining EDM with Afropop and House influences. From Lagos to the world, blending pulsating beats and soulful melodies."}
+          </p>
+
+          {/* Socials */}
+          <div className="flex gap-6 justify-center md:justify-start">
+            {profile.instagram_url && (
+              <a href={profile.instagram_url} target="_blank" className="text-gray-400 hover:text-pink-400 transition">
+                <InstagramIcon />
+              </a>
+            )}
+            {profile.spotify_url && (
+              <a href={profile.spotify_url} target="_blank" className="text-gray-400 hover:text-green-400 transition">
+                <SpotifyIcon />
+              </a>
+            )}
+            {profile.apple_music_url && (
+              <a href={profile.apple_music_url} target="_blank" className="text-gray-400 hover:text-red-400 transition">
+                <AppleMusicIcon />
+              </a>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
 }
+
+
+
+
+// "use client";
+
+// import { motion } from "framer-motion";
+
+// export function DJLineup() {
+//    return (
+//       <section className="relative py-16 md:py-28 px-6 bg-gradient-to-b from-black via-gray-950 to-black text-white overflow-hidden">
+//          {/* Glow / Aura */}
+//          <div className="absolute inset-0 -z-10">
+//             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] bg-pink-600/20 blur-3xl rounded-full" />
+//          </div>
+
+//          {/* Content */}
+//          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+//             {/* Image */}
+//             <motion.div
+//                initial={{ opacity: 0, scale: 0.9 }}
+//                whileInView={{ opacity: 1, scale: 1 }}
+//                transition={{ duration: 0.8 }}
+//                viewport={{ once: true }}
+//                className="relative rounded-3xl overflow-hidden shadow-xl border border-white/10"
+//             >
+//                <img
+//                   src="/assets/dj1.jpg" // Replace with his press image
+//                   alt="Sigag Lauren"
+//                   className="w-full h-[450px] md:h-[550px] object-cover"
+//                />
+//                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+//             </motion.div>
+
+//             {/* Text Info */}
+//             <motion.div
+//                initial={{ opacity: 0, y: 40 }}
+//                whileInView={{ opacity: 1, y: 0 }}
+//                transition={{ duration: 0.7 }}
+//                viewport={{ once: true }}
+//                className="text-center md:text-left"
+//             >
+//                <h2 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mb-6">
+//                   Sigag Lauren
+//                </h2>
+//                <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8">
+//                   Nigerian-born DJ & producer redefining EDM with Afropop and House influences. 
+//                   From Lagos to the world, Sigag blends pulsating beats and soulful melodies, 
+//                   creating electrifying moments on every stage.
+//                </p>
+
+//                {/* Socials */}
+//                <div className="flex gap-6 justify-center md:justify-start">
+//                   <a
+//                      href="https://instagram.com/sigaglauren"
+//                      target="_blank"
+//                      className="text-gray-400 hover:text-pink-400 transition"
+//                   >
+//                      <InstagramIcon />
+//                   </a>
+//                   <a
+//                      href="https://open.spotify.com/artist/3t7U5HMiY2C6AnQ7BBTkdn"
+//                      target="_blank"
+//                      className="text-gray-400 hover:text-green-400 transition"
+//                   >
+//                      <SpotifyIcon />
+//                   </a>
+//                   <a
+//                      href="https://music.apple.com/ng/artist/sigag-lauren/1437272095"
+//                      target="_blank"
+//                      className="text-gray-400 hover:text-red-400 transition"
+//                   >
+//                      <AppleMusicIcon />
+//                   </a>
+//                </div>
+//             </motion.div>
+//          </div>
+//       </section>
+//    );
+// }
 
 const InstagramIcon = () => (
    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.6}>
