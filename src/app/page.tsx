@@ -40,8 +40,8 @@ export default function HomePage() {
       {/* HeroCarousel kept for later use */}
       {/* <HeroCarousel /> */}
 
-      {/* New hero — bg image with light blur + scale; staggered entrance */}
-      <section className="relative w-full min-h-screen flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden">
+      {/* New hero — always dark (same as dark theme); bg image + overlay + light text */}
+      <section className="relative w-full min-h-screen flex items-center justify-center px-4 sm:px-6 md:px-8 overflow-hidden bg-[#111113]">
         <motion.div
           className="absolute inset-0 z-0"
           style={{
