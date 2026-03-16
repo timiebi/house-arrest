@@ -146,7 +146,7 @@ export default function PackDetailPage() {
             initial={scaleFade.hidden}
             animate={scaleFade.visible}
             transition={{ ...transition, duration: reducedMotion ? 0 : duration.medium }}
-            className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)] mb-8 aspect-[4/3]"
+            className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)] mb-6 aspect-[4/3]"
           >
             <img
               src={pack.image_url}
@@ -156,57 +156,17 @@ export default function PackDetailPage() {
             />
           </motion.div>
         ) : (
-          <div className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] mb-8 aspect-[4/3] flex items-center justify-center">
+          <div className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] mb-6 aspect-[4/3] flex items-center justify-center">
             <span className="text-6xl text-[var(--text-muted)]/40" aria-hidden>♪</span>
           </div>
         )}
 
-        <header className="mb-8">
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 1 }}
-            className="text-[var(--text-primary)] text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight"
-          >
-            {pack.name}
-          </motion.h1>
-        </header>
-
-        {pack.description && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 2 }}
-            className="mb-10 max-w-[65ch]"
-          >
-            <p className="text-body-lg text-[var(--text-secondary)] whitespace-pre-wrap">
-              {pack.description}
-            </p>
-          </motion.div>
-        )}
-
-        {hasPreview && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 3 }}
-            className="mb-10"
-            aria-label="Preview"
-          >
-            <h2 className="text-label mb-3">
-              Listen
-            </h2>
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 sm:p-5">
-              {previewBlock}
-            </div>
-          </motion.section>
-        )}
-
+        {/* Buy — under image */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 4 }}
-          className="flex flex-wrap items-center gap-6 py-8 border-t border-b border-[var(--border-subtle)]"
+          transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 1 }}
+          className="flex flex-wrap items-center gap-6 py-6 mb-8 border-b border-[var(--border-subtle)]"
         >
           <span className="text-2xl sm:text-3xl font-semibold text-[var(--accent-via)]">
             {formatPrice(pack.price_cents, pack.currency)}
@@ -222,6 +182,48 @@ export default function PackDetailPage() {
             {buying ? 'Processing…' : 'Buy — instant download'}
           </motion.button>
         </motion.section>
+
+        {/* Listen — SoundCloud / YouTube / audio under buy */}
+        {hasPreview && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 2 }}
+            className="mb-10"
+            aria-label="Preview"
+          >
+            <h2 className="text-label mb-3">
+              Listen
+            </h2>
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 sm:p-5">
+              {previewBlock}
+            </div>
+          </motion.section>
+        )}
+
+        <header className="mb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 3 }}
+            className="text-[var(--text-primary)] text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight"
+          >
+            {pack.name}
+          </motion.h1>
+        </header>
+
+        {pack.description && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 4 }}
+            className="mb-10 max-w-[65ch]"
+          >
+            <p className="text-body-lg text-[var(--text-secondary)] whitespace-pre-wrap">
+              {pack.description}
+            </p>
+          </motion.div>
+        )}
       </article>
 
       <footer className="w-full border-t border-[var(--border-subtle)] py-8 px-4 text-center text-caption mt-12">
