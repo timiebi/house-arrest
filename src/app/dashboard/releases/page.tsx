@@ -2,10 +2,8 @@
 
 import { supabase } from '@/lib/supabaseClient'
 import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { HiMenu, HiX } from 'react-icons/hi'
+import { useToast } from '@/contexts/ToastContext'
 
 type Release = {
   id: string
@@ -18,13 +16,12 @@ type Release = {
 }
 
 export default function ReleasesPageUI() {
-  const router = useRouter()
+  const toast = useToast()
   const [releases, setReleases] = useState<Release[]>([])
   const [newRelease, setNewRelease] = useState({ title: '', artist: '', spotify_url: '' })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Fetch all releases
   const fetchReleases = async () => {
@@ -53,7 +50,7 @@ export default function ReleasesPageUI() {
 
     if (error) {
       console.error('Upload error:', error)
-      alert('Image upload failed. Try again.')
+      toast.error('Image upload failed. Try again.')
       return null
     }
 
@@ -67,7 +64,7 @@ export default function ReleasesPageUI() {
   // Add a new release
   const addRelease = async () => {
     if (!newRelease.title || !newRelease.spotify_url || !newRelease.artist) {
-      alert('Please fill in all fields')
+      toast.error('Please fill in all fields')
       return
     }
 
@@ -89,8 +86,9 @@ export default function ReleasesPageUI() {
 
     const { error } = await supabase.from('releases').insert([insertData])
 
-    if (error) alert(error.message)
+    if (error) toast.error(error.message)
     else {
+      toast.success('Release added.')
       setNewRelease({ title: '', artist: '', spotify_url: '' })
       setImageFile(null)
       setPreview(null)
@@ -113,72 +111,19 @@ export default function ReleasesPageUI() {
     url.replace('open.spotify.com/', 'open.spotify.com/embed/')
 
   return (
-    <main className="flex min-h-screen bg-gray-900 text-white">
-      {/* Mobile hamburger */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 bg-gray-800 rounded-md hover:bg-gray-700 transition"
-        >
-          <HiMenu size={24} />
-        </button>
+    <>
+      <div className="mb-6">
+        <h1 className="text-page-title text-[var(--text-primary)]">Releases</h1>
+        <p className="text-body-sm text-[var(--text-muted)] mt-0.5">Music releases and Spotify links.</p>
       </div>
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 p-6 flex flex-col transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:flex`}
-      >
-        {/* Close mobile sidebar */}
-        <div className="md:hidden mb-4 flex justify-end">
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-2 bg-gray-700 rounded-md hover:bg-gray-600 transition"
-          >
-            <HiX size={24} />
-          </button>
-        </div>
-
-        <h2 className="text-2xl font-bold mb-8 text-center">Dashboard</h2>
-        <ul className="space-y-3 flex-1">
-          <li>
-            <Link
-              href="/dashboard"
-              className="block px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-blue-400 transition"
-              onClick={() => setSidebarOpen(false)}
-            >
-              ← Back to Dashboard
-            </Link>
-          </li>
-        </ul>
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut()
-            router.replace('/login')
-          }}
-          className="mt-auto px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition"
-        >
-          Logout
-        </button>
-      </aside>
-
-      {/* Main Content */}
-      <section className="flex-1 p-6 md:p-10 md:ml-64 overflow-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold mb-10 text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-blue-400 to-purple-400"
-        >
-          Manage Artist Releases
-        </motion.h1>
 
         {/* Add new release form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gray-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-10"
+          className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6 mb-8"
         >
-          <h2 className="text-lg font-semibold mb-6">Add New Release</h2>
+          <h2 className="text-section-title text-[var(--text-primary)] mb-6">Add New Release</h2>
 
           <div className="space-y-6">
             <input
@@ -188,7 +133,7 @@ export default function ReleasesPageUI() {
               onChange={(e) =>
                 setNewRelease({ ...newRelease, title: e.target.value })
               }
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
 
             <input
@@ -198,7 +143,7 @@ export default function ReleasesPageUI() {
               onChange={(e) =>
                 setNewRelease({ ...newRelease, artist: e.target.value })
               }
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
 
             <input
@@ -208,7 +153,7 @@ export default function ReleasesPageUI() {
               onChange={(e) =>
                 setNewRelease({ ...newRelease, spotify_url: e.target.value })
               }
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
 
             <div className="flex flex-col items-center gap-3">
@@ -216,10 +161,10 @@ export default function ReleasesPageUI() {
                 <img
                   src={preview}
                   alt="Preview"
-                  className="w-40 h-40 object-cover rounded-xl border border-white/20"
+                  className="w-40 h-40 object-cover rounded-lg border border-[var(--border-subtle)]"
                 />
               )}
-              <label className="cursor-pointer bg-gray-800 hover:bg-gray-700 px-5 py-2 rounded-xl transition-all">
+              <label className="cursor-pointer bg-[var(--bg-input)] hover:bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-4 py-2 rounded-lg transition-all text-sm text-[var(--text-primary)]">
                 Upload Image
                 <input
                   type="file"
@@ -251,7 +196,7 @@ export default function ReleasesPageUI() {
         {/* List of releases */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {releases.length === 0 ? (
-            <p className="text-center text-gray-400 col-span-full">
+            <p className="text-center text-[var(--text-muted)] col-span-full">
               No releases added yet.
             </p>
           ) : (
@@ -261,7 +206,7 @@ export default function ReleasesPageUI() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="bg-gray-900/60 border border-white/10 rounded-2xl p-5 shadow-md flex flex-col hover:scale-[1.02] transition-all"
+                className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg p-4 flex flex-col hover:border-[var(--accent-solid)]/30 transition"
               >
                 {r.image_url && (
                   <img
@@ -270,9 +215,9 @@ export default function ReleasesPageUI() {
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
                 )}
-                <h3 className="text-lg font-semibold mb-1">{r.title}</h3>
+                <h3 className="text-card-title text-[var(--text-primary)] mb-1">{r.title}</h3>
                 {r.artist && (
-                  <p className="text-gray-400 mb-3 text-sm">By {r.artist}</p>
+                  <p className="text-body-sm text-[var(--text-muted)] mb-3">By {r.artist}</p>
                 )}
                 <iframe
                   src={getSpotifyEmbedUrl(r.spotify_url)}
@@ -292,7 +237,6 @@ export default function ReleasesPageUI() {
             ))
           )}
         </div>
-      </section>
-    </main>
+    </>
   )
 }

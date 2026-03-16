@@ -24,14 +24,14 @@ export function ScrollUpButton({ scrollHeight = 300 }: ScrollUpButtonProps) {
   return (
     <button
       onClick={handleClick}
-      className={`fixed right-6 bottom-6 z-50 pointer-events-auto bg-white/10 backdrop-blur-md hover:bg-white/20 transition rounded-full p-2 sm:p-3 md:p-4 ${
+      className={`fixed right-6 bottom-6 z-50 pointer-events-auto bg-[var(--bg-elevated)] border border-[var(--border-subtle)] backdrop-blur-md hover:bg-[var(--bg-input)] transition rounded-full p-2 sm:p-3 md:p-4 ${
         visible ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
       aria-label="Scroll to top"
     >
       <svg
         viewBox="0 0 24 24"
-        className="h-6 w-6 md:h-7 md:w-7 text-white"
+        className="h-6 w-6 md:h-7 md:w-7 text-[var(--text-primary)]"
       >
         <path
           fill="currentColor"

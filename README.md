@@ -35,3 +35,9 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # house-arrest
+
+## Sample pack store — preview vs delivery
+
+- **Preview (before purchase):** The artist adds a short sample (30–60 sec) via a **YouTube** or **SoundCloud** URL in the dashboard. We store the URL and display it as an embed on the store (pack detail and optionally on cards). No preview file is hosted by us; playback is via YouTube or SoundCloud. Precedence: YouTube > SoundCloud > uploaded preview file (if any).
+- **Actual pack (what the customer buys):** The artist uploads the **full pack (ZIP)** in the dashboard. We store it in **Supabase Storage** (bucket `patches`) and save the path in `patches.file_path`. We do not host the actual pack on YouTube or SoundCloud.
+- **How the customer gets the pack:** After payment, the customer is redirected to the thank-you page. That page lists the purchased packs and a **Download** button per pack. The button calls `/api/download`, which verifies the order and returns a **signed URL** for the file in the bucket so the browser can download the ZIP.

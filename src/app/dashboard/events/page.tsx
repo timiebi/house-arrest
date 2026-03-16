@@ -3,9 +3,9 @@
 import { supabase } from '@/lib/supabaseClient';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { HiCheck, HiPencil, HiTrash, HiX } from 'react-icons/hi';
+import { HiCheck, HiPencil, HiTrash } from 'react-icons/hi';
+import { useToast } from '@/contexts/ToastContext';
 
 type Event = {
   id: string;
@@ -18,11 +18,9 @@ type Event = {
 };
 
 export default function EventsPageUI() {
-  const router = useRouter();
-
+  const toast = useToast();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     date: '',
@@ -63,15 +61,16 @@ export default function EventsPageUI() {
   const addEvent = async () => {
     const { date, city, venue, genre, ticket_url } = formData;
     if (!date || !city || !venue || !genre) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
     setLoading(true);
     const { error } = await supabase.from('events').insert([formData]);
 
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
     else {
+      toast.success('Event added.');
       setFormData({ date: '', city: '', venue: '', genre: '', ticket_url: '' });
       fetchEvents();
     }
@@ -83,8 +82,9 @@ export default function EventsPageUI() {
     setLoading(true);
     const { error } = await supabase.from('events').update(editData).eq('id', id);
 
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
     else {
+      toast.success('Event updated.');
       setEditingId(null);
       fetchEvents();
     }
@@ -122,93 +122,50 @@ export default function EventsPageUI() {
   const timelineEvents = events.filter((e) => !e.is_upcoming);
 
   return (
-    <main className="flex min-h-screen bg-gray-900 text-white">
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 p-6 flex flex-col transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:flex`}
-      >
-        <div className="md:hidden mb-4 flex justify-end">
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-2 bg-gray-700 rounded-md hover:bg-gray-600 transition"
-          >
-            <HiX size={24} />
-          </button>
-        </div>
-
-        <h2 className="text-2xl font-bold mb-8 text-center">Dashboard</h2>
-
-        <ul className="space-y-3 flex-1">
-          <li>
-            <Link
-              href="/dashboard"
-              className="block px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-blue-400 transition"
-            >
-              ← Back to Dashboard
-            </Link>
-          </li>
-        </ul>
-
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut();
-            router.replace('/login');
-          }}
-          className="mt-auto px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition"
-        >
-          Logout
-        </button>
-      </aside>
-
-      {/* Main content */}
-      <section className="flex-1 p-6 md:p-10 md:ml-64 overflow-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold mb-10 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400"
-        >
-          Manage Events
-        </motion.h1>
+    <>
+      <div className="mb-6">
+        <h1 className="text-page-title text-[var(--text-primary)]">Events</h1>
+        <p className="text-body-sm text-[var(--text-muted)] mt-0.5">Shows and tour dates.</p>
+      </div>
 
         {/* Add Event */}
-        <motion.div className="bg-gray-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-10">
-          <h2 className="text-lg font-semibold mb-6">Add New Event</h2>
+        <motion.div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6 mb-8">
+          <h2 className="text-section-title text-[var(--text-primary)] mb-6">Add New Event</h2>
 
           <div className="grid md:grid-cols-2 gap-4">
             <input
               type="date"
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
             <input
               type="text"
               placeholder="City"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
             <input
               type="text"
               placeholder="Venue"
               value={formData.venue}
               onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
             <input
               type="text"
               placeholder="Genre"
               value={formData.genre}
               onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
             <input
               type="text"
               placeholder="Ticket URL (optional)"
               value={formData.ticket_url}
               onChange={(e) => setFormData({ ...formData, ticket_url: e.target.value })}
-              className="w-full p-3 rounded-xl bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-400/70"
+              className="w-full p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
           </div>
 
@@ -224,11 +181,11 @@ export default function EventsPageUI() {
         {/* Upcoming Event */}
         {upcomingEvent && (
           <motion.div className="bg-purple-900/40 border border-purple-500 rounded-xl p-6 mb-10">
-            <h2 className="text-xl font-bold text-pink-400 mb-2">Upcoming Event</h2>
+            <h2 className="text-section-title text-[var(--accent-via)] mb-2">Upcoming Event</h2>
             <p className="font-semibold">
               {upcomingEvent.date} — {upcomingEvent.city} ({upcomingEvent.venue})
             </p>
-            <p className="text-gray-300 mt-1">{upcomingEvent.genre}</p>
+            <p className="text-[var(--text-secondary)] mt-1">{upcomingEvent.genre}</p>
             {upcomingEvent.ticket_url && (
               <Link
                 href={upcomingEvent.ticket_url}
@@ -250,12 +207,12 @@ export default function EventsPageUI() {
         {/* Event List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {timelineEvents.length === 0 ? (
-            <p className="text-center text-gray-400 col-span-full">No other events yet.</p>
+            <p className="text-center text-[var(--text-muted)] col-span-full">No other events yet.</p>
           ) : (
             timelineEvents.map((e) => (
               <div
                 key={e.id}
-                className="bg-gray-900/60 border border-white/10 rounded-xl p-5 flex flex-col hover:bg-gray-900/80 transition"
+                className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-lg p-4 flex flex-col hover:border-[var(--accent-solid)]/30 transition"
               >
                 {editingId === e.id ? (
                   <>
@@ -263,32 +220,32 @@ export default function EventsPageUI() {
                       type="date"
                       value={editData.date}
                       onChange={(ev) => setEditData({ ...editData, date: ev.target.value })}
-                      className="p-2 mb-2 rounded bg-gray-800"
+                      className="p-2 mb-2 rounded bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
                     />
                     <input
                       type="text"
                       value={editData.city}
                       onChange={(ev) => setEditData({ ...editData, city: ev.target.value })}
-                      className="p-2 mb-2 rounded bg-gray-800"
+                      className="p-2 mb-2 rounded bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
                     />
                     <input
                       type="text"
                       value={editData.venue}
                       onChange={(ev) => setEditData({ ...editData, venue: ev.target.value })}
-                      className="p-2 mb-2 rounded bg-gray-800"
+                      className="p-2 mb-2 rounded bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
                     />
                     <input
                       type="text"
                       value={editData.genre}
                       onChange={(ev) => setEditData({ ...editData, genre: ev.target.value })}
-                      className="p-2 mb-2 rounded bg-gray-800"
+                      className="p-2 mb-2 rounded bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
                     />
                     <input
                       type="text"
                       value={editData.ticket_url}
                       onChange={(ev) => setEditData({ ...editData, ticket_url: ev.target.value })}
                       placeholder="Ticket URL (optional)"
-                      className="p-2 mb-2 rounded bg-gray-800"
+                      className="p-2 mb-2 rounded bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)]"
                     />
                     <div className="flex gap-2 mt-2">
                       <button
@@ -299,7 +256,7 @@ export default function EventsPageUI() {
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
-                        className="bg-gray-600 px-3 py-1 rounded hover:bg-gray-500"
+                        className="bg-[var(--bg-elevated)] px-3 py-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Cancel
                       </button>
@@ -307,10 +264,10 @@ export default function EventsPageUI() {
                   </>
                 ) : (
                   <>
-                    <h3 className="text-lg font-semibold text-pink-400">{e.date}</h3>
-                    <p className="text-base mt-1">
+                    <h3 className="text-card-title text-[var(--accent-via)]">{e.date}</h3>
+                    <p className="text-body mt-1">
                       <span className="font-bold">{e.city}</span> — {e.venue}{' '}
-                      <span className="text-gray-400">({e.genre})</span>
+                      <span className="text-[var(--text-muted)]">({e.genre})</span>
                     </p>
                     {e.ticket_url && (
                       <Link
@@ -359,7 +316,6 @@ export default function EventsPageUI() {
             ))
           )}
         </div>
-      </section>
-    </main>
+    </>
   );
 }

@@ -52,7 +52,7 @@ export function VibesGallery() {
 
   return (
     <motion.section
-      className="relative py-15 md:py-28 px-6 text-center bg-gradient-to-b from-black via-gray-950 to-black"
+      className="relative py-15 md:py-28 px-6 text-center bg-[var(--bg-card)] border-y border-[var(--border-subtle)]"
       variants={fadeIn}
       initial="hidden"
       whileInView="visible"
@@ -60,16 +60,16 @@ export function VibesGallery() {
       viewport={{ once: true }}
     >
       <div className="absolute inset-0 -z-10">
-        <div className="w-full h-full bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08)_0%,transparent_70%)]" />
+        <div className="w-full h-full bg-[radial-gradient(circle_at_top,var(--accent-solid)_0%,transparent_70%)] opacity-[0.08]" />
       </div>
 
-      <h2 className="text-4xl md:text-5xl font-heading mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+      <h2 className="text-display text-2xl sm:text-3xl md:text-4xl mb-6 bg-gradient-to-r from-[var(--accent-from)] via-[var(--accent-via)] to-[var(--accent-to)] bg-clip-text text-transparent">
         Vibes Gallery
       </h2>
 
-      <p className="text-gray-400 font-body text-lg max-w-2xl mx-auto mb-12">
+      <p className="text-body-lg text-[var(--text-secondary)] max-w-2xl mx-auto mb-12">
         Step inside the world of{" "}
-        <span className="text-pink-400 font-semibold">Sigag Lauren</span> — from electrifying DJ sets 
+        <span className="text-[var(--accent-via)] font-semibold">Sigag Lauren</span> — from electrifying DJ sets 
         to the unforgettable energy that defines the nights. These moments capture the beats, the lights, 
         and the people who make it all come alive.
       </p>
@@ -82,14 +82,14 @@ export function VibesGallery() {
         <div className="mt-8">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="px-5 py-2 rounded-full bg-gray-800/70 border border-gray-700 text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition"
+            className="px-5 py-2 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-input)] transition"
           >
             {showAll ? "View Less" : "View More"}
           </button>
         </div>
       )}
 
-      <div className="mt-14 inline-block px-4 py-2 rounded-full bg-gray-800/60 border border-gray-700 text-sm text-gray-300 tracking-wide">
+      <div className="mt-14 inline-block px-4 py-2 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-secondary)] tracking-wide">
         📸 Capturing the vibe
       </div>
     </motion.section>
@@ -168,7 +168,7 @@ export function VibesGallery() {
 
 //   return (
 //     <motion.section
-//       className="relative py-15 md:py-28 px-6 text-center bg-gradient-to-b from-black via-gray-950 to-black"
+//       className="relative py-15 md:py-28 px-6 text-center bg-[var(--bg-card)] border-y border-[var(--border-subtle)]"
 //       variants={fadeIn}
 //       initial="hidden"
 //       whileInView="visible"
@@ -186,7 +186,7 @@ export function VibesGallery() {
 //       </h2>
 
 //       {/* Subtitle */}
-//       <p className="text-gray-400 font-body text-lg max-w-2xl mx-auto mb-12">
+//       <p className="text-[var(--text-secondary)] font-body text-lg max-w-2xl mx-auto mb-12">
 //         Step inside the world of{" "}
 //         <span className="text-pink-400 font-semibold">Sigag Lauren</span> — from electrifying DJ sets 
 //         to the unforgettable energy that defines the nights. These moments capture the beats, the lights, 
@@ -203,7 +203,7 @@ export function VibesGallery() {
 //         <div className="mt-8">
 //           <button
 //             onClick={() => setShowAll(!showAll)}
-//             className="px-5 py-2 rounded-full bg-gray-800/70 border border-gray-700 text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition"
+//             className="px-5 py-2 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-input)] transition"
 //           >
 //             {showAll ? "View Less" : "View More"}
 //           </button>
@@ -211,7 +211,7 @@ export function VibesGallery() {
 //       )}
 
 //       {/* Footer Tag */}
-//       <div className="mt-14 inline-block px-4 py-2 rounded-full bg-gray-800/60 border border-gray-700 text-sm text-gray-300 tracking-wide">
+//       <div className="mt-14 inline-block px-4 py-2 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-secondary)] tracking-wide">
 //         📸 Capturing the vibe
 //       </div>
 //     </motion.section>

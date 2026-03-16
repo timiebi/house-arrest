@@ -2,16 +2,14 @@
 
 import { supabase } from '@/lib/supabaseClient'
 import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { HiMenu, HiX } from 'react-icons/hi'
+import LogoLoader from '@/components/LogoLoader'
+import { useToast } from '@/contexts/ToastContext'
 
 const ADMIN_EMAIL = 'kosutimiebinicholas@gmail.com'
 
 export default function AboutPageUI() {
-  const router = useRouter()
-  const [session, setSession] = useState<any>(null)
+  const toast = useToast()
   const [profileId, setProfileId] = useState<number | null>(null)
   const [about, setAbout] = useState('')
   const [spotifyUrl, setSpotifyUrl] = useState('')
@@ -19,18 +17,12 @@ export default function AboutPageUI() {
   const [appleMusicUrl, setAppleMusicUrl] = useState('')
   const [profileImage, setProfileImage] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
-  const [profileImageUrl, setProfileImageUrl] = useState('/assets/dj1.jpg') // default
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [profileImageUrl, setProfileImageUrl] = useState('/assets/dj1.jpg')
+  const [profileLoading, setProfileLoading] = useState(true)
 
-  // Fetch session and profile
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProfile = async () => {
       try {
-        const { data: { session: supaSession } } = await supabase.auth.getSession()
-        if (!supaSession) return router.replace('/dashboard/login')
-        if (supaSession.user.email !== ADMIN_EMAIL) return router.replace('/')
-        setSession(supaSession)
-
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -49,9 +41,10 @@ export default function AboutPageUI() {
       } catch (err) {
         console.error('Unexpected error:', err)
       }
+      setProfileLoading(false)
     }
-    fetchData()
-  }, [router])
+    fetchProfile()
+  }, [])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setProfileImage(e.target.files[0])
@@ -69,7 +62,7 @@ export default function AboutPageUI() {
         .upload(filePath, profileImage, { upsert: true })
 
       if (uploadError) {
-        alert(uploadError.message)
+        toast.error(uploadError.message)
         setLoading(false)
         return
       }
@@ -97,91 +90,45 @@ export default function AboutPageUI() {
       .upsert(upsertData, { onConflict: 'email' })
 
     setLoading(false)
-    if (error) alert(error.message)
+    if (error) toast.error(error.message)
     else {
-      alert('Profile updated successfully!')
+      toast.success('Profile updated successfully.')
       setProfileImageUrl(uploadedUrl)
       setProfileImage(null)
       if (!profileId && upsertData.id) setProfileId(upsertData.id)
     }
   }
 
-  if (!session) return <p className="text-center text-gray-400 mt-20">Loading...</p>
+  if (profileLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <LogoLoader size="sm" />
+      </div>
+    );
+  }
 
   return (
-    <main className="flex min-h-screen bg-gray-900 text-white">
-      {/* Mobile hamburger */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 bg-gray-800 rounded-md hover:bg-gray-700 transition"
-        >
-          <HiMenu size={24} />
-        </button>
+    <>
+      <div className="mb-6">
+        <h1 className="text-page-title text-[var(--text-primary)]">About</h1>
+        <p className="text-body-sm text-[var(--text-muted)] mt-0.5">Artist profile and social links.</p>
       </div>
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 p-6 flex flex-col transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:flex`}
-      >
-        <div className="md:hidden mb-4 flex justify-end">
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-2 bg-gray-700 rounded-md hover:bg-gray-600 transition"
-          >
-            <HiX size={24} />
-          </button>
-        </div>
-
-        <h2 className="text-2xl font-bold mb-8 text-center">Dashboard</h2>
-        <ul className="space-y-3 flex-1">
-          <li>
-            <Link
-              href="/dashboard"
-              className="block px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-blue-400 transition"
-              onClick={() => setSidebarOpen(false)}
-            >
-              ← Back to Dashboard
-            </Link>
-          </li>
-        </ul>
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut()
-            router.replace('/login')
-          }}
-          className="mt-auto px-4 py-2 bg-red-600 rounded-lg hover:bg-red-500 transition"
-        >
-          Logout
-        </button>
-      </aside>
-
-      {/* Main content */}
-      <section className="flex-1 p-6 md:p-10 md:ml-64 overflow-auto">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold mb-10 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400"
-        >
-          Update Artist Profile
-        </motion.h1>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid md:grid-cols-2 gap-8 bg-gray-900/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8"
+          className="grid md:grid-cols-2 gap-8 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-6"
         >
           {/* Left: Image & About */}
           <div className="flex flex-col items-center">
-            <label className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+            <label className="mb-2 text-label">
               Profile Image
             </label>
             <div className="relative w-48 h-48 mb-4">
               <img
                 src={profileImage ? URL.createObjectURL(profileImage) : profileImageUrl}
                 alt="Profile"
-                className="w-full h-full object-cover rounded-3xl border border-white/20"
+                className="w-full h-full object-cover rounded-xl border border-[var(--border-subtle)]"
               />
               <input
                 type="file"
@@ -191,20 +138,20 @@ export default function AboutPageUI() {
               />
             </div>
 
-            <label className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+            <label className="mb-2 text-label">
               About
             </label>
             <textarea
               value={about}
               onChange={(e) => setAbout(e.target.value)}
               placeholder="Write a few sentences about yourself..."
-              className="w-full h-48 rounded-2xl bg-gray-900/70 text-gray-100 border border-white/20 p-4 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-400/60 transition"
+              className="w-full h-48 rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] p-4 placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)] transition"
             />
           </div>
 
           {/* Right: Social Links */}
           <div className="flex flex-col">
-            <label className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+            <label className="mb-2 text-label">
               Spotify URL
             </label>
             <input
@@ -212,10 +159,10 @@ export default function AboutPageUI() {
               value={spotifyUrl}
               onChange={(e) => setSpotifyUrl(e.target.value)}
               placeholder="https://open.spotify.com/artist/..."
-              className="mb-4 w-full rounded-2xl bg-gray-900/70 text-gray-100 border border-white/20 p-4 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-400/60 transition"
+              className="mb-4 w-full rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] p-4 placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)] transition"
             />
 
-            <label className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+            <label className="mb-2 text-label">
               Instagram URL
             </label>
             <input
@@ -223,10 +170,10 @@ export default function AboutPageUI() {
               value={instagramUrl}
               onChange={(e) => setInstagramUrl(e.target.value)}
               placeholder="https://instagram.com/..."
-              className="mb-4 w-full rounded-2xl bg-gray-900/70 text-gray-100 border border-white/20 p-4 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-400/60 transition"
+              className="mb-4 w-full rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] p-4 placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)] transition"
             />
 
-            <label className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">
+            <label className="mb-2 text-label">
               Apple Music URL
             </label>
             <input
@@ -234,7 +181,7 @@ export default function AboutPageUI() {
               value={appleMusicUrl}
               onChange={(e) => setAppleMusicUrl(e.target.value)}
               placeholder="https://music.apple.com/..."
-              className="mb-4 w-full rounded-2xl bg-gray-900/70 text-gray-100 border border-white/20 p-4 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400/60 transition"
+              className="mb-4 w-full rounded-lg bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-subtle)] p-4 placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)] transition"
             />
           </div>
 
@@ -244,14 +191,13 @@ export default function AboutPageUI() {
             disabled={loading}
             whileTap={{ scale: 0.97 }}
             whileHover={{ boxShadow: '0 0 25px rgba(248,113,113,0.5)' }}
-            className={`md:col-span-2 w-full py-3 mt-4 rounded-xl font-semibold tracking-wide text-lg bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:opacity-95 text-white transition ${
+            className={`md:col-span-2 w-full py-3 mt-4 rounded-lg text-body font-semibold bg-[var(--accent-solid)] hover:opacity-90 text-white transition ${
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {loading ? 'Saving...' : 'Save Changes'}
           </motion.button>
         </motion.div>
-      </section>
-    </main>
+    </>
   )
 }

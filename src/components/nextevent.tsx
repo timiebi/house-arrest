@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 },
 };
 
@@ -20,12 +20,29 @@ type Event = {
   is_upcoming?: boolean;
 };
 
+function formatDay(date: Date) {
+  return date.getDate();
+}
+function formatMonthShort(date: Date) {
+  return date.toLocaleDateString('en-US', { month: 'short' });
+}
+function formatWeekday(date: Date) {
+  return date.toLocaleDateString('en-US', { weekday: 'short' });
+}
+function formatFullDate(date: Date) {
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 export default function NextEvent() {
   const [event, setEvent] = useState<Event | null>(null);
 
   useEffect(() => {
     const fetchUpcomingEvent = async () => {
-      // 1️⃣ Try to get manually marked upcoming event
       const { data: upcoming, error } = await supabase
         .from('events')
         .select('*')
@@ -42,141 +59,100 @@ export default function NextEvent() {
         return;
       }
 
-      // 2️⃣ If none found, fetch the next event
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const { data: allEvents } = await supabase
         .from('events')
         .select('*')
         .order('date', { ascending: true });
 
       if (allEvents && allEvents.length > 0) {
-        const nextEvent = allEvents.find((e) => new Date(e.date) >= today);
-        if (nextEvent) setEvent(nextEvent);
+        const next = allEvents.find((e) => new Date(e.date).setHours(0, 0, 0, 0) >= today.getTime());
+        if (next) setEvent(next);
       }
     };
 
     fetchUpcomingEvent();
   }, []);
 
-  if (!event) {
-    return (
-      <motion.section
-        className="relative text-center py-20 px-6 sm:px-10 md:px-20 bg-gradient-to-b from-black via-gray-900 to-black"
-        variants={fadeIn}
-        initial="hidden"
-        whileInView="visible"
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        viewport={{ once: true }}
-      >
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
-          Next Event
-        </h2>
-        <p className="text-gray-400 text-lg sm:text-xl">No upcoming event yet. Stay tuned 🌌</p>
-      </motion.section>
-    );
-  }
-
   return (
     <motion.section
-      className="relative text-center py-20 px-6 sm:px-10 md:px-20 bg-gradient-to-b from-black via-gray-900 to-black"
+      className="relative py-14 md:py-20 px-4 sm:px-6 md:px-8 bg-[var(--bg-card)] border-y border-[var(--border-subtle)]"
       variants={fadeIn}
       initial="hidden"
       whileInView="visible"
-      transition={{ duration: 0.8, ease: 'easeOut' }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
       viewport={{ once: true }}
     >
-      <div className="absolute inset-0 -z-10">
-        <div className="w-full h-full bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.05)_0%,transparent_70%)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,var(--accent-solid)_0%,transparent_60%)] opacity-[0.06]" />
+
+      <div className="max-w-3xl mx-auto">
+        <p className="text-eyebrow text-[var(--accent-via)] mb-6 text-center">
+          Next up
+        </p>
+
+        {!event ? (
+          <div className="rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] p-8 md:p-10 text-center">
+            <p className="text-body-lg text-[var(--text-muted)]">
+              No upcoming event yet. Stay tuned.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] overflow-hidden shadow-[var(--shadow-card)]">
+            <div className="flex flex-col sm:flex-row">
+              {/* Date block */}
+              <div className="sm:w-32 shrink-0 flex flex-col items-center justify-center py-6 px-4 bg-[var(--bg-input)]/80 border-b sm:border-b-0 sm:border-r border-[var(--border-subtle)]">
+                <span className="text-display text-4xl text-[var(--accent-via)] leading-none">
+                  {formatDay(new Date(event.date))}
+                </span>
+                <span className="text-body-sm font-semibold text-[var(--text-secondary)] mt-1 uppercase tracking-wider">
+                  {formatMonthShort(new Date(event.date))}
+                </span>
+                <span className="text-caption text-[var(--text-muted)] mt-0.5">
+                  {new Date(event.date).getFullYear()}
+                </span>
+              </div>
+
+              {/* Details */}
+              <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
+                <p className="text-body-sm text-[var(--text-muted)] mb-1">
+                  {formatFullDate(new Date(event.date))}
+                </p>
+                <h2 className="text-page-title text-[var(--text-primary)] mb-1">
+                  {event.venue}
+                </h2>
+                <p className="text-body text-[var(--text-secondary)] mb-3">
+                  {event.city}
+                </p>
+                <span className="inline-block text-label text-[var(--accent-via)] mb-4">
+                  {event.genre}
+                </span>
+                <p className="text-body-sm text-[var(--text-muted)] mb-6 max-w-md">
+                  Join Sigag Lauren live for {event.genre.toLowerCase()} — energy, rhythm, and an unforgettable night.
+                </p>
+
+                {event.ticket_url ? (
+                  <Link
+                    href={event.ticket_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 rounded-xl text-body-sm font-semibold bg-[var(--accent-solid)] text-white hover:opacity-95 transition"
+                  >
+                    Buy tickets
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <span className="text-body-sm text-[var(--text-muted)] italic">
+                    Ticket link not available
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
-        Next Event
-      </h2>
-
-      <p className="text-lg sm:text-xl md:text-2xl mb-1 font-body font-semibold text-white">
-        {new Date(event.date).toLocaleDateString(undefined, {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </p>
-      <p className="text-md sm:text-lg md:text-xl mb-4 font-body text-gray-300">
-        {event.venue}, {event.city}
-      </p>
-      <p className="mb-8 max-w-xl mx-auto text-gray-400 font-body leading-relaxed text-sm sm:text-base md:text-lg">
-        Join <span className="text-pink-400 font-semibold">Sigag Lauren</span> live with special guest DJs for an
-        unforgettable night of {event.genre}, energy, and rhythm.
-      </p>
-
-      {event.ticket_url ? (
-        <Link
-          href={event.ticket_url}
-          target="_blank"
-          className="cursor-pointer inline-block bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white px-8 py-3 sm:px-10 sm:py-4 rounded-xl font-semibold hover:scale-105 transition-transform duration-300 shadow-lg"
-        >
-          Buy Tickets
-        </Link>
-      ) : (
-        <span className="text-gray-400 italic">Ticket link not available</span>
-      )}
     </motion.section>
   );
 }
-
-
-
-
-// 'use client';
-
-// import { motion } from 'framer-motion';
-// import Link from 'next/link';
-
-// const fadeIn = {
-//   hidden: { opacity: 0, y: 40 },
-//   visible: { opacity: 1, y: 0 },
-// };
-
-// export default function NextEvent() {
-//   return (
-//     <motion.section
-//       className="relative text-center py-20 px-6 sm:px-10 md:px-20 bg-gradient-to-b from-black via-gray-900 to-black"
-//       variants={fadeIn}
-//       initial="hidden"
-//       whileInView="visible"
-//       transition={{ duration: 0.8, ease: 'easeOut' }}
-//       viewport={{ once: true }}
-//     >
-//       {/* Subtle glowing backdrop */}
-//       <div className="absolute inset-0 -z-10">
-//         <div className="w-full h-full bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.05)_0%,transparent_70%)]" />
-//       </div>
-
-//       {/* Heading */}
-//       <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading mb-6 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
-//         Next Event
-//       </h2>
-
-//       {/* Event details */}
-//       <p className="text-lg sm:text-xl md:text-2xl mb-1 font-body font-semibold text-white">
-//         Friday, July 12, 2025
-//       </p>
-//       <p className="text-md sm:text-lg md:text-xl mb-4 font-body text-gray-300">
-//         Warehouse 23, Lagos
-//       </p>
-//       <p className="mb-8 max-w-xl mx-auto text-gray-400 font-body leading-relaxed text-sm sm:text-base md:text-lg">
-//         Join <span className="text-pink-400 font-semibold">Sigag Lauren</span> live with special guest DJs for an
-//         unforgettable night of house, energy, and rhythm.
-//       </p>
-
-//       {/* CTA button */}
-//       <Link
-//         href="https://tix.com"
-//         target="_blank"
-//         className="cursor-pointer inline-block bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white px-8 py-3 sm:px-10 sm:py-4 rounded-xl font-semibold hover:scale-105 transition-transform duration-300 shadow-lg"
-//       >
-//         Buy Tickets
-//       </Link>
-//     </motion.section>
-//   );
-// }

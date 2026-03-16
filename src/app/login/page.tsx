@@ -1,15 +1,21 @@
 'use client'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useToast } from '@/contexts/ToastContext'
 
 export default function AdminLogin() {
   const router = useRouter()
+  const toast = useToast()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
-    if (!email) return alert('Please enter your email.')
+    if (!email) {
+      toast.error('Please enter your email.')
+      return
+    }
 
     setLoading(true)
     const { error } = await supabase.auth.signInWithOtp({
@@ -20,31 +26,34 @@ export default function AdminLogin() {
     })
     setLoading(false)
 
-    if (error) alert(error.message)
-    else alert('✅ Check your email for a login link.')
+    if (error) toast.error(error.message)
+    else toast.success('Check your email for a login link.')
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-[#0f1115] text-gray-100 px-4 relative">
+    <main className="flex items-center justify-center min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] px-4 relative">
       
       {/* BACK BUTTON — added only this */}
       <button
         onClick={() => router.back()}
-        className="absolute top-6 left-6 text-gray-300 hover:text-white text-sm underline"
+        className="absolute top-6 left-6 text-link-muted hover:text-[var(--text-primary)] underline"
       >
         ← Back
       </button>
 
-      <div className="bg-[#1a1d23] border border-[#2a2d33] shadow-xl rounded-2xl p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-semibold text-center mb-2 text-white">
+      <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)] rounded-2xl p-8 w-full max-w-sm">
+        <div className="flex justify-center mb-6">
+          <Image src="/assets/sigaglogo.svg" alt="Sigag Lauren" width={120} height={32} className="sigag-logo sigag-logo-on-solid" />
+        </div>
+        <h1 className="text-page-title text-center mb-2 text-[var(--text-primary)]">
           Admin Login
         </h1>
-        <p className="text-sm text-gray-400 text-center mb-8">
+        <p className="text-body-sm text-[var(--text-muted)] text-center mb-8">
           Sign in securely to manage the website
         </p>
 
         <div className="flex flex-col gap-4">
-          <label htmlFor="email" className="text-sm text-gray-300">
+          <label htmlFor="email" className="text-label text-[var(--text-secondary)]">
             Email address
           </label>
           <input
@@ -53,18 +62,18 @@ export default function AdminLogin() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="admin@example.com"
-            className="w-full p-3 rounded-md bg-[#121418] border border-[#2a2d33] text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+            className="w-full p-3 rounded-md bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)] transition"
           />
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full mt-3 py-3 rounded-md bg-yellow-950 hover:bg-yellow-900 transition-colors font-medium text-white disabled:opacity-60"
+            className="w-full mt-3 py-3 rounded-md bg-[var(--accent-solid)] hover:opacity-90 transition text-body-sm font-semibold text-white disabled:opacity-60"
           >
             {loading ? 'Sending link...' : 'Send Login Link'}
           </button>
         </div>
 
-        <p className="text-xs text-gray-500 text-center mt-8">
+        <p className="text-caption text-center mt-8">
           Only authorized users can access this dashboard.
         </p>
       </div>

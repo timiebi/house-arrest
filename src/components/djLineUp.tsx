@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import LogoLoader from "@/components/LogoLoader";
 
 export function DJLineup() {
   const [profile, setProfile] = useState<any>(null);
@@ -31,13 +32,13 @@ useEffect(() => {
 }, []);
 
 
-  if (!profile) return <p className="text-center text-gray-400 mt-20">Loading...</p>;
+  if (!profile) return <div className="flex justify-center py-20"><LogoLoader size="sm" /></div>;
 
   return (
-    <section className="relative py-16 md:py-28 px-6 bg-gradient-to-b from-black via-gray-950 to-black text-white overflow-hidden">
+    <section className="relative py-16 md:py-28 px-6 bg-[var(--bg-card)] border-y border-[var(--border-subtle)] overflow-hidden">
       {/* Glow / Aura */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] bg-pink-600/20 blur-3xl rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] bg-[var(--accent-solid)]/20 blur-3xl rounded-full" />
       </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
@@ -47,14 +48,14 @@ useEffect(() => {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="relative rounded-3xl overflow-hidden shadow-xl border border-white/10"
+          className="relative rounded-xl overflow-hidden shadow-lg border border-[var(--border-subtle)]"
         >
           <img
             src={profile.profile_image_url || "/assets/dj1.jpg"}
             alt={profile.name || "DJ"}
             className="w-full h-[450px] md:h-[550px] object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-page)]/90 via-transparent to-transparent" />
         </motion.div>
 
         {/* Text Info */}
@@ -65,10 +66,10 @@ useEffect(() => {
           viewport={{ once: true }}
           className="text-center md:text-left"
         >
-          <h2 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mb-6">
+          <h2 className="text-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl bg-gradient-to-r from-[var(--accent-from)] via-[var(--accent-via)] to-[var(--accent-to)] bg-clip-text text-transparent mb-6">
             {profile.name || "Sigag Lauren"}
           </h2>
-          <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8">
+          <p className="text-body-lg text-[var(--text-secondary)] leading-relaxed mb-8">
             {profile.about ||
               "DJ & producer redefining EDM with Afropop and House influences. From Lagos to the world, blending pulsating beats and soulful melodies."}
           </p>
@@ -76,17 +77,17 @@ useEffect(() => {
           {/* Socials */}
           <div className="flex gap-6 justify-center md:justify-start">
             {profile.instagram_url && (
-              <a href={profile.instagram_url} target="_blank" className="text-gray-400 hover:text-pink-400 transition">
+              <a href={profile.instagram_url} target="_blank" className="text-[var(--text-muted)] hover:text-[var(--accent-via)] transition">
                 <InstagramIcon />
               </a>
             )}
             {profile.spotify_url && (
-              <a href={profile.spotify_url} target="_blank" className="text-gray-400 hover:text-green-400 transition">
+              <a href={profile.spotify_url} target="_blank" className="text-[var(--text-muted)] hover:text-green-500 transition">
                 <SpotifyIcon />
               </a>
             )}
             {profile.apple_music_url && (
-              <a href={profile.apple_music_url} target="_blank" className="text-gray-400 hover:text-red-400 transition">
+              <a href={profile.apple_music_url} target="_blank" className="text-[var(--text-muted)] hover:text-red-400 transition">
                 <AppleMusicIcon />
               </a>
             )}
@@ -106,7 +107,7 @@ useEffect(() => {
 
 // export function DJLineup() {
 //    return (
-//       <section className="relative py-16 md:py-28 px-6 bg-gradient-to-b from-black via-gray-950 to-black text-white overflow-hidden">
+//       <section className="relative py-16 md:py-28 px-6 bg-[var(--bg-card)] border-y border-[var(--border-subtle)] overflow-hidden">
 //          {/* Glow / Aura */}
 //          <div className="absolute inset-0 -z-10">
 //             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] bg-pink-600/20 blur-3xl rounded-full" />
@@ -120,14 +121,14 @@ useEffect(() => {
 //                whileInView={{ opacity: 1, scale: 1 }}
 //                transition={{ duration: 0.8 }}
 //                viewport={{ once: true }}
-//                className="relative rounded-3xl overflow-hidden shadow-xl border border-white/10"
+//                className="relative rounded-xl overflow-hidden shadow-lg border border-[var(--border-subtle)]"
 //             >
 //                <img
 //                   src="/assets/dj1.jpg" // Replace with his press image
 //                   alt="Sigag Lauren"
 //                   className="w-full h-[450px] md:h-[550px] object-cover"
 //                />
-//                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+//                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-page)]/90 via-transparent to-transparent" />
 //             </motion.div>
 
 //             {/* Text Info */}
@@ -141,7 +142,7 @@ useEffect(() => {
 //                <h2 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent mb-6">
 //                   Sigag Lauren
 //                </h2>
-//                <p className="text-gray-300 text-lg md:text-xl leading-relaxed mb-8">
+//                <p className="text-[var(--text-secondary)] text-lg md:text-xl leading-relaxed mb-8">
 //                   Nigerian-born DJ & producer redefining EDM with Afropop and House influences. 
 //                   From Lagos to the world, Sigag blends pulsating beats and soulful melodies, 
 //                   creating electrifying moments on every stage.
@@ -152,14 +153,14 @@ useEffect(() => {
 //                   <a
 //                      href="https://instagram.com/sigaglauren"
 //                      target="_blank"
-//                      className="text-gray-400 hover:text-pink-400 transition"
+//                      className="text-[var(--text-muted)] hover:text-[var(--accent-via)] transition"
 //                   >
 //                      <InstagramIcon />
 //                   </a>
 //                   <a
 //                      href="https://open.spotify.com/artist/3t7U5HMiY2C6AnQ7BBTkdn"
 //                      target="_blank"
-//                      className="text-gray-400 hover:text-green-400 transition"
+//                      className="text-[var(--text-muted)] hover:text-green-500 transition"
 //                   >
 //                      <SpotifyIcon />
 //                   </a>
@@ -295,7 +296,7 @@ const AppleMusicIcon = () => (
 //    ];
 
 //    return (
-//       <section className="relative py-20 md:px-6 bg-gradient-to-b from-black via-gray-950 to-black text-white overflow-hidden">
+//       <section className="relative py-20 md:px-6 bg-[var(--bg-card)] border-y border-[var(--border-subtle)] overflow-hidden">
 //          {/* Background glow effect */}
 //          <div className="absolute inset-0 -z-10">
 //             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-pink-600/20 blur-3xl rounded-full" />
@@ -319,7 +320,7 @@ const AppleMusicIcon = () => (
 //                   whileInView={{ opacity: 1, y: 0 }}
 //                   viewport={{ once: true }}
 //                   transition={{ duration: 0.6, delay: i * 0.15 }}
-//                   className="group cursor-pointer w-full relative rounded-2xl overflow-hidden bg-gray-900/60 border border-white/10 shadow-lg hover:shadow-pink-500/30 hover:-translate-y-2 transition-all duration-500"
+//                   className="group cursor-pointer w-full relative rounded-2xl overflow-hidden bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-lg hover:shadow-pink-500/30 hover:-translate-y-2 transition-all duration-500"
 //                >
 //                   {/* DJ Image */}
 //                   <div className="relative md:h-72 w-full overflow-hidden h-60">
@@ -328,20 +329,20 @@ const AppleMusicIcon = () => (
 //                         alt={dj.name}
 //                         className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
 //                      />
-//                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+//                      <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-page)]/90 via-transparent to-transparent" />
 //                   </div>
 
 //                   {/* Info */}
 //                   <div className="absolute bottom-0 p-6 w-full">
 //                      <h3 className="text-[.875rem] md:text-2xl text-left font-bold text-pink-400 mb-2">{dj.name}</h3>
-//                      <p className="text-gray-300 text-left text-[.75rem] md:text-sm mb-4">{dj.bio}</p>
+//                      <p className="text-[var(--text-secondary)] text-left text-[.75rem] md:text-sm mb-4">{dj.bio}</p>
 
 //                      {/* Socials */}
 //                      <div className="flex gap-6">
 //                         <a
 //                            href={dj.instagram}
 //                            target="_blank"
-//                            className="text-gray-400 hover:text-pink-400 transition"
+//                            className="text-[var(--text-muted)] hover:text-[var(--accent-via)] transition"
 //                         >
 //                            <svg
 //                               xmlns="http://www.w3.org/2000/svg"
@@ -361,7 +362,7 @@ const AppleMusicIcon = () => (
 //                         <a
 //                            href={dj.spotify}
 //                            target="_blank"
-//                            className="text-gray-400 hover:text-green-400 transition"
+//                            className="text-[var(--text-muted)] hover:text-green-500 transition"
 //                         >
 //                            <Sportify />
 //                         </a>

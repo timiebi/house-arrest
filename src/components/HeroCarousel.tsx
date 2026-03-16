@@ -3,6 +3,7 @@
 import Autoplay from 'embla-carousel-autoplay';
 import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Slide = { src: string; heading: string; sub?: string }
@@ -86,14 +87,20 @@ export default function HeroCarousel() {
 
               {/* Content */}
               <div className="absolute inset-0 flex flex-col justify-end md:justify-center items-center text-center px-4 sm:px-6 md:px-10 pb-12 md:pb-0">
-                <h1 className="text-white text-2xl sm:text-3xl md:text-5xl font-heading drop-shadow-xl leading-tight">
+                <h1 className="text-display text-white text-2xl sm:text-3xl md:text-5xl drop-shadow-xl leading-tight">
                   {heading}
                 </h1>
                 {sub && (
-                  <p className="mt-2 sm:mt-3 text-sm sm:text-base md:text-xl text-white/90 font-body drop-shadow">
+                  <p className="mt-2 sm:mt-3 text-body-sm sm:text-body md:text-body-lg text-white/90 drop-shadow">
                     {sub}
                   </p>
                 )}
+                <Link
+                  href="/marketplace"
+                  className="mt-4 sm:mt-5 inline-flex px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-body-sm font-medium transition backdrop-blur-sm"
+                >
+                  View marketplace
+                </Link>
               </div>
             </div>
           ))}

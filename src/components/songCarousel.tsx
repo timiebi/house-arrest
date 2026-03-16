@@ -180,8 +180,8 @@ function SongCard({ song, priority = false }: { song: Song; priority?: boolean }
             </svg>
           </div>
           <div className="text-left truncate">
-            <div className="text-lg font-semibold text-white truncate max-w-[200px]">{song.title}</div>
-            <div className="text-sm text-gray-300">{song.artist}</div>
+            <div className="text-card-title text-white truncate max-w-[200px]">{song.title}</div>
+            <div className="text-body-sm text-white/80">{song.artist}</div>
           </div>
         </div>
       </div>

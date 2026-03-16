@@ -1,8 +1,10 @@
+import FirstVisitLoader from "@/components/FirstVisitLoader";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ToastProvider } from "@/contexts/ToastContext";
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 
-// Add fonts
 const sora = Sora({
   variable: "--font-sora",
   subsets: ["latin"],
@@ -17,11 +19,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Sigag Lauren",
+  title: "Sigag Lauren — DJ, Producer, House Music",
   description:
-    "Sigag Lauren — DJ, music producer, and performer. Dive into immersive house sets, cutting-edge productions, and unforgettable live shows.",
+    "Sigag Lauren is a DJ and producer. House music, events, live sets, and sample packs. Artist profile, upcoming shows, and music.",
 };
-
 
 export default function RootLayout({
   children,
@@ -29,11 +30,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${inter.variable} antialiased bg-black text-white`}
+        className={`${sora.variable} ${inter.variable} antialiased`}
+        style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}
       >
-        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('sigag-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);})();`,
+          }}
+        />
+        <ThemeProvider>
+          <ToastProvider>
+            <FirstVisitLoader />
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
