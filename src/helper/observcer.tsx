@@ -9,7 +9,7 @@ const containerVariant = {
     hidden: {},
     show: {
         transition: {
-            staggerChildren: 0.3,
+            staggerChildren: 0.05,
         },
     },
 };
@@ -17,7 +17,7 @@ const containerVariant = {
 
 
 export const FadeInOnScroll = ({ children }: { children: React.ReactNode }) => {
-    const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
+    const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.05 });
 
     return (
         <motion.div

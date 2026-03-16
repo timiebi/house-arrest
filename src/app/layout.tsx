@@ -22,6 +22,21 @@ export const metadata: Metadata = {
   title: "Sigag Lauren — DJ, Producer, House Music",
   description:
     "Sigag Lauren is a DJ and producer. House music, events, live sets, and sample packs. Artist profile, upcoming shows, and music.",
+    icons: {
+      icon: "/assets/sigaglogo.svg",
+      shortcut: "/assets/sigaglogo.svg",
+      apple: "/assets/sigaglogo.svg",
+      other: {
+        rel: "icon",
+        url: "/assets/sigaglogo.svg",
+      },
+    },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -30,9 +45,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${sora.variable} ${inter.variable}`}>
       <body
-        className={`${sora.variable} ${inter.variable} antialiased`}
+        className="antialiased w-full min-h-screen"
         style={{ backgroundColor: "var(--bg-page)", color: "var(--text-primary)" }}
       >
         <script

@@ -3,10 +3,10 @@ import SiteNav from '@/components/SiteNav';
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
+    <main className="w-full min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
       <SiteNav />
       <div className="pt-14 md:pt-16" />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 md:py-20">
+      <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 md:px-8 py-12 md:py-20">
         <h1 className="text-display text-[var(--text-primary)] text-3xl sm:text-4xl md:text-5xl mb-6">
           About <span className="bg-gradient-to-r from-[var(--accent-from)] via-[var(--accent-via)] to-[var(--accent-to)] bg-clip-text text-transparent">Sigag Lauren</span>
         </h1>

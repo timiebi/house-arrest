@@ -1,14 +1,10 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-
-const fadeIn = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
-};
+import { duration, ease, fadeUp, viewportOnce } from '@/lib/animations';
 
 type Event = {
   id: string;
@@ -40,6 +36,7 @@ function formatFullDate(date: Date) {
 
 export default function NextEvent() {
   const [event, setEvent] = useState<Event | null>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const fetchUpcomingEvent = async () => {
@@ -77,16 +74,16 @@ export default function NextEvent() {
 
   return (
     <motion.section
-      className="relative py-14 md:py-20 px-4 sm:px-6 md:px-8 bg-[var(--bg-card)] border-y border-[var(--border-subtle)]"
-      variants={fadeIn}
+      className="relative w-full py-14 md:py-20 px-4 sm:px-6 md:px-8 bg-[var(--bg-card)] border-y border-[var(--border-subtle)]"
+      variants={fadeUp}
       initial="hidden"
       whileInView="visible"
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      viewport={{ once: true }}
+      viewport={viewportOnce}
+      transition={{ duration: reducedMotion ? 0 : duration.fast, ease: ease.out }}
     >
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,var(--accent-solid)_0%,transparent_60%)] opacity-[0.06]" />
 
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto w-full">
         <p className="text-eyebrow text-[var(--accent-via)] mb-6 text-center">
           Next up
         </p>

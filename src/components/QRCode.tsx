@@ -11,12 +11,12 @@ const fadeIn = {
 export default function QRScanner() {
    return (
       <motion.section
-         className="relative py-15 md:py-24 px-6 text-center bg-[var(--bg-card)] border-y border-[var(--border-subtle)]"
+         className="relative w-full py-12 md:py-24 px-4 sm:px-6 md:px-8 text-center bg-[var(--bg-card)] border-y border-[var(--border-subtle)]"
          variants={fadeIn}
          initial="hidden"
          whileInView="visible"
-         transition={{ duration: 0.8, ease: "easeOut" }}
-         viewport={{ once: true }}
+         transition={{ duration: 0.3, ease: "easeOut" }}
+         viewport={{ once: true, amount: 0.06 }}
       >
          {/* background glow */}
          <div className="absolute inset-0 -z-10">

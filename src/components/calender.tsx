@@ -8,12 +8,12 @@ import LogoLoader from '@/components/LogoLoader';
 
 const fadeIn: Variants = {
   hidden: { opacity: 0, y: 0 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
 };
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: 'easeOut' } },
 };
 
 type Event = {
@@ -46,7 +46,7 @@ export function EventTimeline() {
   }, []);
 
   return (
-    <section className="relative py-15 md:py-20 px-6 bg-[var(--bg-card)] border-y border-[var(--border-subtle)] overflow-hidden">
+    <section className="relative w-full py-12 md:py-20 px-4 sm:px-6 md:px-8 bg-[var(--bg-card)] border-y border-[var(--border-subtle)] overflow-hidden">
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[var(--accent-solid)]/20 rounded-full blur-3xl" />
@@ -62,7 +62,7 @@ export function EventTimeline() {
           Upcoming Events
         </motion.h2>
 
-        <div className="relative max-w-2xl mx-auto">
+        <div className="relative max-w-2xl mx-auto w-full">
           {/* Timeline line */}
           <div className="absolute top-0 left-4 md:left-6 h-full w-1 bg-gradient-to-b from-pink-500/80 via-pink-400/40 to-transparent rounded-full" />
 

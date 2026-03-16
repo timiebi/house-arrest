@@ -4,8 +4,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { Patch } from '@/types/patches';
+import { duration, ease, scaleFade } from '@/lib/animations';
 import SiteNav from '@/components/SiteNav';
 import LogoLoader from '@/components/LogoLoader';
 import SoundCloudEmbed from '@/components/SoundCloudEmbed';
@@ -19,14 +20,18 @@ function formatPrice(cents: number, currency: string) {
   }).format(cents / 100);
 }
 
+const stagger = 0.06;
+
 export default function PackDetailPage() {
   const params = useParams();
   const router = useRouter();
   const toast = useToast();
+  const reducedMotion = useReducedMotion();
   const id = params?.id as string;
   const [pack, setPack] = useState<Patch | null>(null);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
+  const transition = reducedMotion ? { duration: 0 } : { duration: duration.normal, ease: ease.out };
 
   useEffect(() => {
     if (!id) {
@@ -74,10 +79,10 @@ export default function PackDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
+      <main className="pack-detail-page w-full min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
         <SiteNav />
         <div className="pt-14 md:pt-16" />
-        <div className="max-w-3xl mx-auto px-4 py-16 flex justify-center">
+        <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-16 flex justify-center">
           <LogoLoader size="md" />
         </div>
       </main>
@@ -86,10 +91,10 @@ export default function PackDetailPage() {
 
   if (!pack) {
     return (
-      <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
+      <main className="pack-detail-page w-full min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
         <SiteNav />
         <div className="pt-14 md:pt-16" />
-        <div className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-16 text-center">
           <p className="text-body text-[var(--text-muted)]">Sample pack not found.</p>
           <Link href="/marketplace" className="mt-4 inline-block text-link-accent hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 rounded">
             ← Back to store
@@ -116,15 +121,15 @@ export default function PackDetailPage() {
     ) : null;
 
   return (
-    <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
+    <main className="pack-detail-page w-full min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
       <SiteNav />
       <div className="pt-14 md:pt-16" />
 
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <article className="max-w-3xl mx-auto w-full px-4 sm:px-6 md:px-8 py-8 md:py-12">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
+          transition={transition}
           className="mb-6"
         >
           <Link
@@ -135,23 +140,23 @@ export default function PackDetailPage() {
           </Link>
         </motion.div>
 
-        {/* Custom image hero — takes over; no SoundCloud art above */}
+        {/* Pack image — same as marketplace: aspect-[4/3], object-cover */}
         {pack.image_url ? (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] mb-8 aspect-[2/1] sm:aspect-[21/9] shadow-[var(--shadow-card)]"
+            initial={scaleFade.hidden}
+            animate={scaleFade.visible}
+            transition={{ ...transition, duration: reducedMotion ? 0 : duration.medium }}
+            className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)] mb-8 aspect-[4/3]"
           >
             <img
               src={pack.image_url}
               alt=""
-              className="w-full h-full object-cover"
-              sizes="(max-width: 640px) 100vw, 672px"
+              className="w-full h-full object-cover transition-transform duration-300"
+              sizes="(max-width: 672px) 100vw, 672px"
             />
           </motion.div>
         ) : (
-          <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--bg-elevated)] to-[var(--bg-card)] mb-8 aspect-[2/1] sm:aspect-[21/9] flex items-center justify-center border border-[var(--border-subtle)]">
+          <div className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] mb-8 aspect-[4/3] flex items-center justify-center">
             <span className="text-6xl text-[var(--text-muted)]/40" aria-hidden>♪</span>
           </div>
         )}
@@ -160,8 +165,8 @@ export default function PackDetailPage() {
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            className="text-display text-[var(--text-primary)] text-3xl sm:text-4xl md:text-5xl"
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 1 }}
+            className="text-[var(--text-primary)] text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight"
           >
             {pack.name}
           </motion.h1>
@@ -171,7 +176,7 @@ export default function PackDetailPage() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 2 }}
             className="mb-10 max-w-[65ch]"
           >
             <p className="text-body-lg text-[var(--text-secondary)] whitespace-pre-wrap">
@@ -180,12 +185,11 @@ export default function PackDetailPage() {
           </motion.div>
         )}
 
-        {/* Listen: minimal player so custom image stays hero; users can still play */}
         {hasPreview && (
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.15 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 3 }}
             className="mb-10"
             aria-label="Preview"
           >
@@ -201,24 +205,26 @@ export default function PackDetailPage() {
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 4 }}
           className="flex flex-wrap items-center gap-6 py-8 border-t border-b border-[var(--border-subtle)]"
         >
-          <span className="text-price text-[var(--accent-via)] text-2xl sm:text-3xl">
+          <span className="text-2xl sm:text-3xl font-semibold text-[var(--accent-via)]">
             {formatPrice(pack.price_cents, pack.currency)}
           </span>
-          <button
+          <motion.button
             type="button"
             disabled={buying}
             onClick={handleBuy}
-            className="px-8 py-4 rounded-xl text-body font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 disabled:opacity-50 transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)] active:scale-[0.98]"
+            whileHover={reducedMotion ? undefined : { scale: 1.02 }}
+            whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+            className="px-8 py-4 rounded-xl text-body font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 disabled:opacity-50 transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)]"
           >
             {buying ? 'Processing…' : 'Buy — instant download'}
-          </button>
+          </motion.button>
         </motion.section>
       </article>
 
-      <footer className="border-t border-[var(--border-subtle)] py-8 text-center text-caption mt-12">
+      <footer className="w-full border-t border-[var(--border-subtle)] py-8 px-4 text-center text-caption mt-12">
         <Link href="/marketplace" className="inline-block mb-3 opacity-70 hover:opacity-100 transition" aria-label="Sigag Lauren">
           <Image src="/assets/sigaglogo.svg" alt="" width={72} height={18} className="sigag-logo sigag-logo-on-solid mx-auto" />
         </Link>

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -10,15 +10,7 @@ import LogoLoader from '@/components/LogoLoader';
 import SoundCloudEmbed from '@/components/SoundCloudEmbed';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 import { ScrollUpButton } from '@/components/scrollUpButton';
-
-const fadeIn = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.05, duration: 0.4 },
-  }),
-};
+import { duration, ease, fadeUp, staggerDelay, viewportOnce } from '@/lib/animations';
 
 function formatPrice(cents: number, currency: string) {
   return new Intl.NumberFormat('en-US', {
@@ -31,6 +23,7 @@ export default function MarketplacePage() {
   const [patches, setPatches] = useState<Patch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const fetchPatches = async () => {
@@ -48,24 +41,24 @@ export default function MarketplacePage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
+    <main className="w-full min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
       <SiteNav />
       <div className="pt-14 md:pt-16" />
 
       {/* Hero — sample packs headline */}
-      <section className="relative px-4 sm:px-6 py-16 md:py-24 lg:py-28 max-w-5xl mx-auto overflow-hidden">
+      <section className="relative w-full px-4 sm:px-6 md:px-8 py-16 md:py-24 lg:py-28 max-w-5xl mx-auto overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,var(--accent-solid)_0%,transparent_50%)] opacity-[0.15]" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_40%_at_80%_20%,var(--accent-via)_0%,transparent_45%)] opacity-[0.08]" />
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: reducedMotion ? 0 : duration.medium, ease: ease.outSoft }}
           className="text-center max-w-3xl mx-auto"
         >
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.15, duration: 0.4 }}
+            transition={{ delay: reducedMotion ? 0 : 0.12, duration: reducedMotion ? 0 : duration.normal, ease: ease.out }}
             className="text-eyebrow text-[var(--accent-via)] mb-4"
           >
             Producer sounds
@@ -81,7 +74,7 @@ export default function MarketplacePage() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
+            transition={{ delay: reducedMotion ? 0 : 0.25, duration: reducedMotion ? 0 : duration.normal, ease: ease.out }}
           >
             <Link
               href="/"
@@ -94,7 +87,7 @@ export default function MarketplacePage() {
       </section>
 
       {/* Pack grid */}
-      <section className="px-4 sm:px-6 pb-20 max-w-6xl mx-auto">
+      <section className="w-full px-4 sm:px-6 md:px-8 pb-20 max-w-6xl mx-auto">
         {loading && (
           <div className="flex justify-center py-20 min-h-[200px]">
             <LogoLoader size="md" />
@@ -131,10 +124,10 @@ export default function MarketplacePage() {
                   {patches.map((pack, i) => (
                     <motion.article
                       key={pack.id}
-                      variants={fadeIn}
-                      initial="hidden"
-                      animate="visible"
-                      custom={i}
+                      initial={fadeUp.hidden}
+                      whileInView={fadeUp.visible}
+                      viewport={viewportOnce}
+                      transition={{ duration: reducedMotion ? 0 : duration.normal, ease: ease.out, delay: reducedMotion ? 0 : i * staggerDelay }}
                       className="group rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] overflow-hidden hover:border-[var(--accent-solid)]/30 hover:shadow-[var(--shadow-card)] transition-all duration-300"
                     >
                       <Link href={`/pack/${pack.id}`} className="block">
@@ -204,11 +197,12 @@ export default function MarketplacePage() {
       </section>
 
       {/* CTA — artist */}
-      <section className="px-4 sm:px-6 pb-16 max-w-5xl mx-auto">
+      <section className="w-full px-4 sm:px-6 md:px-8 pb-16 max-w-5xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          initial={fadeUp.hidden}
+          whileInView={fadeUp.visible}
+          viewport={viewportOnce}
+          transition={{ duration: reducedMotion ? 0 : duration.medium, ease: ease.out }}
           className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] p-8 md:p-10 text-center"
         >
           <h2 className="text-page-title text-[var(--text-primary)]">
@@ -226,7 +220,7 @@ export default function MarketplacePage() {
         </motion.div>
       </section>
 
-      <footer className="border-t border-[var(--border-subtle)] py-8 text-center text-caption">
+      <footer className="w-full border-t border-[var(--border-subtle)] py-8 px-4 text-center text-caption">
         <Link href="/" className="inline-block mb-4 opacity-70 hover:opacity-100 transition" aria-label="Sigag Lauren">
           <Image src="/assets/sigaglogo.svg" alt="" width={80} height={20} className="sigag-logo sigag-logo-on-solid mx-auto" />
         </Link>
