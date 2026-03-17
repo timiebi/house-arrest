@@ -140,7 +140,19 @@ export default function PackDetailPage() {
           </Link>
         </motion.div>
 
-        {/* Pack image — same as marketplace: aspect-[4/3], object-cover */}
+        {/* 1. Header / name on top */}
+        <header className="mb-6">
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 0 }}
+            className="text-[var(--text-primary)] text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight"
+          >
+            {pack.name}
+          </motion.h1>
+        </header>
+
+        {/* 2. Pack image */}
         {pack.image_url ? (
           <motion.div
             initial={scaleFade.hidden}
@@ -161,7 +173,7 @@ export default function PackDetailPage() {
           </div>
         )}
 
-        {/* Buy — under image */}
+        {/* 3. Price + Buy button */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -183,12 +195,26 @@ export default function PackDetailPage() {
           </motion.button>
         </motion.section>
 
-        {/* Listen — SoundCloud / YouTube / audio under buy */}
+        {/* 4. Description (body) */}
+        {pack.description && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 2 }}
+            className="mb-10 max-w-[65ch]"
+          >
+            <p className="text-body-lg text-[var(--text-secondary)] whitespace-pre-wrap">
+              {pack.description}
+            </p>
+          </motion.div>
+        )}
+
+        {/* 5. Listen — SoundCloud / YouTube / audio last */}
         {hasPreview && (
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 2 }}
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 3 }}
             className="mb-10"
             aria-label="Preview"
           >
@@ -199,30 +225,6 @@ export default function PackDetailPage() {
               {previewBlock}
             </div>
           </motion.section>
-        )}
-
-        <header className="mb-8">
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 3 }}
-            className="text-[var(--text-primary)] text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight"
-          >
-            {pack.name}
-          </motion.h1>
-        </header>
-
-        {pack.description && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 4 }}
-            className="mb-10 max-w-[65ch]"
-          >
-            <p className="text-body-lg text-[var(--text-secondary)] whitespace-pre-wrap">
-              {pack.description}
-            </p>
-          </motion.div>
         )}
       </article>
 

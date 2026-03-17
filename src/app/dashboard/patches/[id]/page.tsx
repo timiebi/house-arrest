@@ -201,12 +201,13 @@ export default function EditPatchPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Price (cents)</label>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Price (USD)</label>
             <input
               type="number"
               min={0}
-              value={form.price_cents}
-              onChange={(e) => setForm((f) => ({ ...f, price_cents: Number(e.target.value) || 0 }))}
+              step={0.01}
+              value={form.price_cents / 100}
+              onChange={(e) => setForm((f) => ({ ...f, price_cents: Math.round((parseFloat(e.target.value) || 0) * 100) }))}
               className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
             />
           </div>
