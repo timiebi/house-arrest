@@ -9,7 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { HiMenu, HiX } from 'react-icons/hi';
 
-const ADMIN_EMAIL = 'kosutimiebinicholas@gmail.com';
+const ADMIN_EMAILS = ['kosutimiebinicholas@gmail.com', 'sigaglauren@gmail.com'];
 
 const navItems = [
   { label: 'Marketplace', href: '/dashboard/patches' },
@@ -38,7 +38,7 @@ export default function DashboardLayout({
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.replace('/login');
-      } else if ((data.session.user as { email?: string }).email !== ADMIN_EMAIL) {
+      } else if (!ADMIN_EMAILS.includes((data.session.user as { email?: string }).email ?? '')) {
         router.replace('/');
       } else {
         setSession(data.session);
@@ -50,7 +50,7 @@ export default function DashboardLayout({
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) router.replace('/login');
-      else if ((session.user as { email?: string }).email !== ADMIN_EMAIL) router.replace('/');
+      else if (!ADMIN_EMAILS.includes((session.user as { email?: string }).email ?? '')) router.replace('/');
       else setSession(session);
     });
 

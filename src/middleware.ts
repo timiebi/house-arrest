@@ -7,10 +7,10 @@ export async function middleware(req: NextRequest) {
   const supabase = createMiddlewareClient({ req, res })
   const { data: { session } } = await supabase.auth.getSession()
 
-  const ADMIN_EMAIL = 'kosutimiebinicholas@gmail.com'
+  const ADMIN_EMAILS = ['kosutimiebinicholas@gmail.com', 'sigaglauren@gmail.com']
 
   // Only redirect non-admin users trying to access /dashboard
-  if (session && session.user.email !== ADMIN_EMAIL && req.nextUrl.pathname.startsWith('/dashboard')) {
+  if (session && (!session.user.email || !ADMIN_EMAILS.includes(session.user.email)) && req.nextUrl.pathname.startsWith('/dashboard')) {
     const redirectUrl = req.nextUrl.clone()
     redirectUrl.pathname = '/'
     return NextResponse.redirect(redirectUrl)
