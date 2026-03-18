@@ -1,16 +1,16 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import type { Patch } from '@/types/patches';
-import SiteNav from '@/components/SiteNav';
 import LogoLoader from '@/components/LogoLoader';
+import SiteNav from '@/components/SiteNav';
 import SoundCloudEmbed from '@/components/SoundCloudEmbed';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 import { ScrollUpButton } from '@/components/scrollUpButton';
 import { duration, ease, fadeUp, staggerDelay, viewportOnce } from '@/lib/animations';
+import type { Patch } from '@/types/patches';
+import { motion, useReducedMotion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 function formatPrice(cents: number, currency: string) {
   return new Intl.NumberFormat('en-US', {
@@ -95,7 +95,7 @@ export default function MarketplacePage() {
         )}
 
         {!loading && error && (
-          <div className="text-center py-16 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] px-6">
+          <div className="text-center py-16 bg-[var(--bg-card)] border border-[var(--border-subtle)] px-6">
             <p className="text-body-sm text-[var(--text-muted)]">
               Unable to load sample packs. Add the <code className="bg-[var(--bg-elevated)] px-1.5 py-0.5 rounded">patches</code> table in Supabase.
             </p>
@@ -109,7 +109,7 @@ export default function MarketplacePage() {
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-20 px-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]"
+                  className="text-center py-20 px-8 bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)]"
                 >
                   <div className="text-6xl text-[var(--text-muted)]/30 mb-4" aria-hidden>♪</div>
                   <h2 className="text-section-title text-[var(--text-primary)]">
@@ -128,7 +128,7 @@ export default function MarketplacePage() {
                       whileInView={fadeUp.visible}
                       viewport={viewportOnce}
                       transition={{ duration: reducedMotion ? 0 : duration.normal, ease: ease.out, delay: reducedMotion ? 0 : i * staggerDelay }}
-                      className="group rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] overflow-hidden hover:border-[var(--accent-solid)]/30 hover:shadow-[var(--shadow-card)] transition-all duration-300"
+                      className="group bg-[var(--bg-card)] border border-[var(--border-subtle)] overflow-hidden hover:border-[var(--accent-solid)]/30 hover:shadow-[var(--shadow-card)] transition-all duration-300"
                     >
                       <Link href={`/pack/${pack.id}`} className="block">
                         <div className="aspect-[4/3] bg-[var(--bg-elevated)] relative overflow-hidden">
@@ -159,11 +159,11 @@ export default function MarketplacePage() {
                             <div className="mt-4 pt-3 border-t border-[var(--border-subtle)]/80">
                               <p className="text-label mb-2">Preview</p>
                               {pack.youtube_url ? (
-                                <div className="rounded-lg overflow-hidden" onClick={(e) => e.preventDefault()}>
+                                <div className="overflow-hidden" onClick={(e) => e.preventDefault()}>
                                   <YouTubeEmbed videoUrl={pack.youtube_url} compact title={pack.name} />
                                 </div>
                               ) : pack.soundcloud_url ? (
-                                <div className="rounded-lg overflow-hidden" onClick={(e) => e.preventDefault()}>
+                                <div className="overflow-hidden" onClick={(e) => e.preventDefault()}>
                                   <SoundCloudEmbed trackUrl={pack.soundcloud_url} compact className="w-full" />
                                 </div>
                               ) : pack.preview_url ? (
@@ -203,7 +203,7 @@ export default function MarketplacePage() {
           whileInView={fadeUp.visible}
           viewport={viewportOnce}
           transition={{ duration: reducedMotion ? 0 : duration.medium, ease: ease.out }}
-          className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] p-8 md:p-10 text-center"
+          className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-8 md:p-10 text-center"
         >
           <h2 className="text-page-title text-[var(--text-primary)]">
             Who makes these?

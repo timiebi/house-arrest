@@ -45,7 +45,17 @@ export default function DashboardPatchesPage() {
   const uploadFile = async (file: File, prefix: string): Promise<string | null> => {
     const ext = file.name.split('.').pop() || 'bin';
     const path = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
+    const extLower = ext.toLowerCase();
+    const inferredContentType =
+      file.type ||
+      (extLower === 'zip' ? 'application/zip' : undefined) ||
+      (extLower === 'wav' ? 'audio/wav' : undefined) ||
+      (extLower === 'mp3' ? 'audio/mpeg' : undefined);
+
+    const uploadOptions: { upsert: boolean; contentType?: string } = { upsert: true };
+    if (inferredContentType) uploadOptions.contentType = inferredContentType;
+
+    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, uploadOptions);
     if (uploadError) {
       const msg = uploadError.message?.toLowerCase() || '';
       if (msg.includes('payload') || msg.includes('large') || msg.includes('size')) {
@@ -222,7 +232,7 @@ export default function DashboardPatchesPage() {
                 onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
                 className="w-full text-xs text-[var(--text-secondary)] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[var(--accent-solid)] file:text-white file:text-xs"
               />
-              <p className="mt-1 text-caption">This is the file customers download after purchase. One ZIP with all WAV/MP3 loops. Recommended under 100MB. You can add or replace it later via Edit.</p>
+              <p className="mt-1 text-caption">Optional full ZIP pack (recommended under 100MB).</p>
             </div>
             <div>
               <label className="block text-label text-[var(--text-secondary)] mb-1.5">Cover image (optional)</label>

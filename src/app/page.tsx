@@ -46,11 +46,11 @@ export default function HomePage() {
           className="absolute inset-0 z-0"
           style={{
             background: "url('/assets/sigagvol1.png') center 60% / cover no-repeat",
-            filter: "blur(4px)",
+            // filter: "blur(4px)",
             transform: "scale(1.02)",
           }}
           initial={reducedMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 0.8 }}
+          animate={{ opacity: .9 }}
           transition={{ duration: reducedMotion ? 0 : duration.normal, ease: ease.out }}
           aria-hidden
         />
@@ -83,7 +83,7 @@ export default function HomePage() {
           <motion.p
             variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
             transition={{ duration: t.duration, ease: ease.out }}
-            className="text-body text-white/90 tracking-[0.2em] uppercase mb-4 drop-shadow-sm"
+            className="text-body text-white/90 tracking-[0.2em] uppercase mb-4 drop-shadow-md"
           >
             SL_AEE — Afro Electronic Essentials (Vol. 1)
           </motion.p>
@@ -124,7 +124,7 @@ export default function HomePage() {
             >
               <Link
                 href={latestPack ? `/pack/${latestPack.id}` : '/marketplace'}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-[#111113] text-body-sm font-semibold uppercase tracking-wide hover:bg-white/95 transition shadow-xl hover:shadow-2xl"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-lg bg-white text-[#111113] text-body-sm font-semibold uppercase tracking-wide hover:bg-white/95 transition shadow-xl hover:shadow-2xl"
               >
                 View sample pack
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

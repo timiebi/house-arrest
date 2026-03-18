@@ -1,17 +1,17 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import type { Patch } from '@/types/patches';
-import { duration, ease, scaleFade } from '@/lib/animations';
-import SiteNav from '@/components/SiteNav';
 import LogoLoader from '@/components/LogoLoader';
+import SiteNav from '@/components/SiteNav';
 import SoundCloudEmbed from '@/components/SoundCloudEmbed';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 import { useToast } from '@/contexts/ToastContext';
+import { duration, ease, scaleFade } from '@/lib/animations';
+import type { Patch } from '@/types/patches';
+import { motion, useReducedMotion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 function formatPrice(cents: number, currency: string) {
   return new Intl.NumberFormat('en-US', {
@@ -125,23 +125,23 @@ export default function PackDetailPage() {
       <SiteNav />
       <div className="pt-14 md:pt-16" />
 
-      <article className="max-w-3xl mx-auto w-full px-4 sm:px-6 md:px-8 py-8 md:py-12">
+      <article className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-12 py-10 md:py-14">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={transition}
-          className="mb-6"
+          className="mb-6 w-full"
         >
           <Link
             href="/marketplace"
-            className="text-link-muted hover:text-[var(--accent-via)] transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)] rounded"
+            className="text-link-muted hover:text-[var(--accent-via)] transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)]"
           >
             ← Back to sample packs
           </Link>
         </motion.div>
 
         {/* 1. Header / name on top */}
-        <header className="mb-6">
+        <header className="mb-10 w-full">
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -152,79 +152,81 @@ export default function PackDetailPage() {
           </motion.h1>
         </header>
 
-        {/* 2. Pack image */}
-        {pack.image_url ? (
-          <motion.div
-            initial={scaleFade.hidden}
-            animate={scaleFade.visible}
-            transition={{ ...transition, duration: reducedMotion ? 0 : duration.medium }}
-            className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] shadow-[var(--shadow-card)] mb-6 aspect-[4/3]"
-          >
-            <img
-              src={pack.image_url}
-              alt=""
-              className="w-full h-full object-cover transition-transform duration-300"
-              sizes="(max-width: 672px) 100vw, 672px"
-            />
-          </motion.div>
-        ) : (
-          <div className="rounded-2xl overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] mb-6 aspect-[4/3] flex items-center justify-center">
-            <span className="text-6xl text-[var(--text-muted)]/40" aria-hidden>♪</span>
+        {/* 2. Side-by-side: image (left) | buy + player (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+          <div className="lg:col-span-5">
+            {pack.image_url ? (
+              <motion.div
+                initial={scaleFade.hidden}
+                animate={scaleFade.visible}
+                transition={{ ...transition, duration: reducedMotion ? 0 : duration.medium }}
+                className="overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] aspect-[4/3]"
+              >
+                <img
+                  src={pack.image_url}
+                  alt=""
+                  className="w-full h-full object-contain bg-[var(--bg-elevated)]"
+                  sizes="(max-width: 1024px) 100vw, 600px"
+                />
+              </motion.div>
+            ) : (
+              <div className="overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] aspect-[4/3] flex items-center justify-center">
+                <span className="text-6xl text-[var(--text-muted)]/40" aria-hidden>
+                  ♪
+                </span>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* 3. Price + Buy button */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 1 }}
-          className="flex flex-wrap items-center gap-6 py-6 mb-8 border-b border-[var(--border-subtle)]"
-        >
-          <span className="text-2xl sm:text-3xl font-semibold text-[var(--accent-via)]">
-            {formatPrice(pack.price_cents, pack.currency)}
-          </span>
-          <motion.button
-            type="button"
-            disabled={buying}
-            onClick={handleBuy}
-            whileHover={reducedMotion ? undefined : { scale: 1.02 }}
-            whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-            className="px-8 py-4 rounded-xl text-body font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 disabled:opacity-50 transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)]"
-          >
-            {buying ? 'Processing…' : 'Buy — instant download'}
-          </motion.button>
-        </motion.section>
+          <div className="lg:col-span-7 lg:sticky lg:top-24">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 1 }}
+              className="p-0"
+            >
+              <div>
+                <p className="text-caption text-[var(--text-muted)] mb-2">Price</p>
+                <span className="text-3xl sm:text-4xl font-semibold text-[var(--accent-via)] tracking-tight">
+                  {formatPrice(pack.price_cents, pack.currency)}
+                </span>
+              </div>
 
-        {/* 4. Description (body) */}
+              <motion.button
+                type="button"
+                disabled={buying}
+                onClick={handleBuy}
+                whileHover={reducedMotion ? undefined : { scale: 1.02 }}
+                whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+                className="mt-5 w-full px-8 py-4 rounded-none cursor-pointer text-body font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)]"
+              >
+                {buying ? 'Processing…' : 'Buy — instant download'}
+              </motion.button>
+
+              {/* Listen */}
+              {hasPreview && (
+                <div className="mt-7 pt-6 border-t border-[var(--border-subtle)]">
+                  <h2 className="text-label mb-3">Listen</h2>
+                  {previewBlock}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* 3. Description (full width underneath) */}
         {pack.description && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 2 }}
-            className="mb-10 max-w-[65ch]"
+            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 3 }}
+            className="mt-12 mb-6 max-w-6xl"
           >
+            <h2 className="text-section-title mb-4">Description</h2>
             <p className="text-body-lg text-[var(--text-secondary)] whitespace-pre-wrap">
               {pack.description}
             </p>
           </motion.div>
-        )}
-
-        {/* 5. Listen — SoundCloud / YouTube / audio last */}
-        {hasPreview && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: reducedMotion ? 0 : stagger * 3 }}
-            className="mb-10"
-            aria-label="Preview"
-          >
-            <h2 className="text-label mb-3">
-              Listen
-            </h2>
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-4 sm:p-5">
-              {previewBlock}
-            </div>
-          </motion.section>
         )}
       </article>
 
