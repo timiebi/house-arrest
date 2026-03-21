@@ -2,11 +2,11 @@
 
 import LogoLoader from '@/components/LogoLoader';
 import SiteNav from '@/components/SiteNav';
-import SoundCloudEmbed from '@/components/SoundCloudEmbed';
-import YouTubeEmbed from '@/components/YouTubeEmbed';
+import PackPreviewBlock from '@/components/PackPreviewBlock';
 import { useToast } from '@/contexts/ToastContext';
 import { duration, ease, scaleFade } from '@/lib/animations';
 import type { Patch } from '@/types/patches';
+import { packHasAnyPreviewField } from '@/lib/packPreview';
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -65,8 +65,8 @@ export default function PackDetailPage() {
         body: JSON.stringify({ pack_id: pack.id, pack_name: pack.name, price_cents: pack.price_cents, currency: pack.currency }),
       });
       const data = await res.json();
-      if (data.order_id) {
-        router.push(`/purchase/thank-you?order_id=${data.order_id}`);
+      if (data.order_id && data.download_token) {
+        router.push(`/purchase/thank-you?order_id=${data.order_id}&token=${encodeURIComponent(data.download_token)}`);
       } else {
         setBuying(false);
         toast.error(data.error || 'Checkout failed.');
@@ -104,21 +104,8 @@ export default function PackDetailPage() {
     );
   }
 
-  const hasPreview = pack.youtube_url || pack.soundcloud_url || pack.preview_url;
-  const previewBlock =
-    pack.youtube_url ? (
-      <YouTubeEmbed videoUrl={pack.youtube_url} title={`Preview: ${pack.name}`} />
-    ) : pack.soundcloud_url ? (
-      <SoundCloudEmbed trackUrl={pack.soundcloud_url} />
-    ) : pack.preview_url ? (
-      <audio
-        src={pack.preview_url}
-        controls
-        preload="metadata"
-        className="w-full accent-[var(--accent-solid)]"
-        title={`Preview: ${pack.name}`}
-      />
-    ) : null;
+  const hasPreview = packHasAnyPreviewField(pack);
+  const previewBlock = <PackPreviewBlock pack={pack} title={pack.name} />;
 
   return (
     <main className="pack-detail-page w-full min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">

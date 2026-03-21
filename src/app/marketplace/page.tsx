@@ -2,11 +2,11 @@
 
 import LogoLoader from '@/components/LogoLoader';
 import SiteNav from '@/components/SiteNav';
-import SoundCloudEmbed from '@/components/SoundCloudEmbed';
-import YouTubeEmbed from '@/components/YouTubeEmbed';
+import PackPreviewBlock from '@/components/PackPreviewBlock';
 import { ScrollUpButton } from '@/components/scrollUpButton';
 import { duration, ease, fadeUp, staggerDelay, viewportOnce } from '@/lib/animations';
 import type { Patch } from '@/types/patches';
+import { packHasAnyPreviewField } from '@/lib/packPreview';
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -89,8 +89,19 @@ export default function MarketplacePage() {
       {/* Pack grid */}
       <section className="w-full px-4 sm:px-6 md:px-8 pb-20 max-w-6xl mx-auto">
         {loading && (
-          <div className="flex justify-center py-20 min-h-[200px]">
-            <LogoLoader size="md" />
+          <div
+            className="flex flex-col items-center justify-center py-20 sm:py-28 min-h-[min(420px,70vh)] rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] shadow-[var(--shadow-card)] mx-auto max-w-2xl"
+            aria-busy="true"
+            aria-live="polite"
+          >
+            <LogoLoader
+              size="lg"
+              prominent
+              label="Loading sample packs…"
+            />
+            <p className="mt-2 text-caption text-[var(--text-secondary)] font-medium">
+              One moment — fetching the store
+            </p>
           </div>
         )}
 
@@ -128,9 +139,13 @@ export default function MarketplacePage() {
                       whileInView={fadeUp.visible}
                       viewport={viewportOnce}
                       transition={{ duration: reducedMotion ? 0 : duration.normal, ease: ease.out, delay: reducedMotion ? 0 : i * staggerDelay }}
-                      className="group bg-[var(--bg-card)] border border-[var(--border-subtle)] overflow-hidden hover:border-[var(--accent-solid)]/30 hover:shadow-[var(--shadow-card)] transition-all duration-300"
+                      className="group bg-[var(--bg-card)] border border-[var(--border-subtle)] overflow-hidden hover:border-[var(--accent-solid)]/30 hover:shadow-[var(--shadow-card)] transition-all duration-300 flex flex-col"
                     >
-                      <Link href={`/pack/${pack.id}`} className="block">
+                      {/* Image + title + blurb only — preview is NOT inside the link so play/seek never navigates */}
+                      <Link
+                        href={`/pack/${pack.id}`}
+                        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-solid)]"
+                      >
                         <div className="aspect-[4/3] bg-[var(--bg-elevated)] relative overflow-hidden">
                           {pack.image_url ? (
                             <img
@@ -146,8 +161,8 @@ export default function MarketplacePage() {
                             </div>
                           )}
                         </div>
-                        <div className="p-5">
-                          <h2 className="text-card-title text-[var(--text-primary)]">
+                        <div className="p-5 pb-3">
+                          <h2 className="text-card-title text-[var(--text-primary)] group-hover:text-[var(--accent-via)] transition-colors">
                             {pack.name}
                           </h2>
                           {pack.description && (
@@ -155,38 +170,28 @@ export default function MarketplacePage() {
                               {pack.description}
                             </p>
                           )}
-                          {(pack.youtube_url || pack.soundcloud_url || pack.preview_url) && (
-                            <div className="mt-4 pt-3 border-t border-[var(--border-subtle)]/80">
-                              <p className="text-label mb-2">Preview</p>
-                              {pack.youtube_url ? (
-                                <div className="overflow-hidden" onClick={(e) => e.preventDefault()}>
-                                  <YouTubeEmbed videoUrl={pack.youtube_url} compact title={pack.name} />
-                                </div>
-                              ) : pack.soundcloud_url ? (
-                                <div className="overflow-hidden" onClick={(e) => e.preventDefault()}>
-                                  <SoundCloudEmbed trackUrl={pack.soundcloud_url} compact className="w-full" />
-                                </div>
-                              ) : pack.preview_url ? (
-                                <audio
-                                  src={pack.preview_url}
-                                  controls
-                                  preload="metadata"
-                                  className="w-full h-9 accent-[var(--accent-solid)]"
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              ) : null}
-                            </div>
-                          )}
-                          <div className="mt-5 flex items-center justify-between gap-3">
-                            <span className="text-price text-[var(--accent-via)]">
-                              {formatPrice(pack.price_cents, pack.currency)}
-                            </span>
-                            <span className="shrink-0 px-5 py-2.5 rounded-xl text-body-sm font-semibold bg-[var(--accent-solid)] text-white group-hover:opacity-95 transition active:scale-[0.98]">
-                              View pack
-                            </span>
-                          </div>
                         </div>
                       </Link>
+                      {packHasAnyPreviewField(pack) && (
+                        <div className="px-5 pb-3 border-t border-[var(--border-subtle)]/80 pt-4">
+                          <p className="text-label mb-2">Preview</p>
+                          <PackPreviewBlock pack={pack} title={pack.name} compact />
+                        </div>
+                      )}
+                      <div className="mt-auto flex items-center justify-between gap-3 p-5 pt-3 border-t border-[var(--border-subtle)]/80">
+                        <Link
+                          href={`/pack/${pack.id}`}
+                          className="text-price text-[var(--accent-via)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-solid)] rounded"
+                        >
+                          {formatPrice(pack.price_cents, pack.currency)}
+                        </Link>
+                        <Link
+                          href={`/pack/${pack.id}`}
+                          className="shrink-0 px-5 py-2.5 rounded-xl text-body-sm font-semibold bg-[var(--accent-solid)] text-white hover:opacity-95 transition active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-solid)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-card)]"
+                        >
+                          View pack
+                        </Link>
+                      </div>
                     </motion.article>
                   ))}
                 </div>

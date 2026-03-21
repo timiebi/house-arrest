@@ -6,6 +6,8 @@ export type Patch = {
   currency: string;
   /** Supabase Storage path (private bucket) */
   file_path: string;
+  /** Paid full-pack link destination (e.g., Google Drive), used by backend download flow */
+  delivery_url: string | null;
   /** Optional cover/art image path in Storage */
   image_path: string | null;
   /** Public URL for cover image (or null) */
@@ -14,9 +16,9 @@ export type Patch = {
   preview_path: string | null;
   /** Optional; public or signed URL for preview playback on store */
   preview_url: string | null;
-  /** Optional SoundCloud track URL for preview; shown as embed when set */
+  /** Optional SoundCloud track URL for preview; used if no uploaded preview_url */
   soundcloud_url: string | null;
-  /** Optional YouTube video URL for preview (short sample); shown as embed when set. Precedence: YouTube > SoundCloud > preview_url */
+  /** Optional YouTube URL for preview; used if no preview_url and no SoundCloud */
   youtube_url: string | null;
   status: 'draft' | 'published';
   created_at: string;

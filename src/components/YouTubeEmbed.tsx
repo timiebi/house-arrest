@@ -9,6 +9,8 @@ function getYouTubeVideoId(url: string): string | null {
     const allowed = host === 'youtu.be' || host.endsWith('youtube.com');
     if (!allowed) return null;
     if (host === 'youtu.be') return u.pathname.slice(1).split('/')[0] || null;
+    const shorts = u.pathname.match(/^\/shorts\/([^/?#]+)/);
+    if (shorts?.[1]) return shorts[1];
     return u.searchParams.get('v');
   } catch {
     return null;

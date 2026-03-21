@@ -1,61 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
-const BUCKET = 'patches';
+import { createHash } from 'crypto';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export async function GET(request: NextRequest) {
-  const orderId = request.nextUrl.searchParams.get('order_id');
-  const patchId = request.nextUrl.searchParams.get('patch_id');
-  if (!orderId || !patchId) {
-    return NextResponse.json({ error: 'Missing order_id or patch_id' }, { status: 400 });
+  const token = request.nextUrl.searchParams.get('token');
+  if (!token) {
+    return NextResponse.json({ error: 'Missing download token' }, { status: 400 });
   }
 
+  const tokenHash = createHash('sha256').update(token).digest('hex');
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const { data: order } = await supabase
-    .from('orders')
-    .select('id, status')
-    .eq('id', orderId)
+  const { data: grant } = await supabase
+    .from('download_grants')
+    .select('id, patch_id, downloads_remaining, expires_at, revoked')
+    .eq('token_hash', tokenHash)
     .single();
 
-  if (!order) {
-    return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-  }
-  if (order.status !== 'paid' && order.status !== 'fulfilled') {
-    return NextResponse.json({ error: 'Order not paid' }, { status: 403 });
+  if (!grant) {
+    return NextResponse.json({ error: 'Invalid download token' }, { status: 403 });
   }
 
-  const { data: item } = await supabase
-    .from('order_items')
+  if (grant.revoked) {
+    return NextResponse.json({ error: 'Download token revoked' }, { status: 403 });
+  }
+
+  if (new Date(grant.expires_at).getTime() <= Date.now()) {
+    return NextResponse.json({ error: 'Download token expired' }, { status: 403 });
+  }
+
+  const { data: decremented } = await supabase
+    .from('download_grants')
+    .update({
+      downloads_remaining: Math.max(0, grant.downloads_remaining - 1),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', grant.id)
+    .gt('downloads_remaining', 0)
     .select('id')
-    .eq('order_id', orderId)
-    .eq('patch_id', patchId)
     .single();
 
-  if (!item) {
-    return NextResponse.json({ error: 'Item not in order' }, { status: 403 });
+  if (!decremented) {
+    return NextResponse.json({ error: 'Download limit reached' }, { status: 403 });
   }
 
   const { data: patch } = await supabase
     .from('patches')
-    .select('file_path')
-    .eq('id', patchId)
+    .select('delivery_url')
+    .eq('id', grant.patch_id)
     .single();
 
-  if (!patch?.file_path || patch.file_path === 'placeholder/pending') {
-    return NextResponse.json({ error: 'Pack file not ready yet. The seller may still be uploading it.' }, { status: 404 });
+  if (!patch?.delivery_url) {
+    return NextResponse.json({ error: 'Pack delivery link not configured yet' }, { status: 404 });
   }
 
-  const { data: signed } = await supabase.storage
-    .from(BUCKET)
-    .createSignedUrl(patch.file_path, 60);
-
-  if (signed?.signedUrl) {
-    return NextResponse.redirect(signed.signedUrl);
-  }
-
-  const { data: publicUrl } = supabase.storage.from(BUCKET).getPublicUrl(patch.file_path);
-  return NextResponse.redirect(publicUrl.publicUrl);
+  return NextResponse.redirect(patch.delivery_url);
 }

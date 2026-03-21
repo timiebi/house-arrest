@@ -10,9 +10,10 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 export async function GET() {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
+  // All published packs, newest first (drafts never appear on marketplace).
   const { data: rows, error } = await supabase
     .from('patches')
-    .select('id, name, description, price_cents, currency, image_path, image_url, preview_url, soundcloud_url, youtube_url, status')
+    .select('id, name, description, price_cents, currency, file_path, delivery_url, image_path, image_url, preview_url, soundcloud_url, youtube_url, status')
     .eq('status', 'published')
     .order('created_at', { ascending: false });
 

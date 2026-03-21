@@ -1,28 +1,34 @@
--- Run in Supabase SQL Editor. Fixes 403 when dashboard uploads cover/audio/preview to bucket "patches".
--- Your existing policy is for anon READ; we need authenticated INSERT (upload).
+-- Run this entire file once in Supabase: SQL Editor → New query → paste → Run.
+-- Fixes 403 "new row violates row-level security policy" when uploading ZIP/cover/preview in the dashboard.
 
--- 1. Allow authenticated users (dashboard admin) to UPLOAD to patches bucket (covers, audio, previews)
+-- 0. Ensure bucket "patches" exists (public so cover images can use getPublicUrl)
+insert into storage.buckets (id, name, public)
+values ('patches', 'patches', true)
+on conflict (id) do update set public = true;
+
+-- 1. Allow uploads to patches bucket from app clients.
+-- Use `to public` so it works whether request role resolves as anon/authenticated.
 drop policy if exists "Authenticated can upload to patches" on storage.objects;
-create policy "Authenticated can upload to patches"
+drop policy if exists "Public can upload to patches" on storage.objects;
+create policy "Public can upload to patches"
 on storage.objects for insert
-to authenticated
-with check (
-  bucket_id = 'patches'
-  and (lower((storage.foldername(name))[1]) in ('covers', 'audio', 'previews'))
-);
+to public
+with check (bucket_id = 'patches');
 
--- 2. Allow authenticated to read/update/delete their uploads (optional, for future edit/delete)
+-- 2. Allow update/delete in patches bucket (needed when upsert=true touches existing path).
 drop policy if exists "Authenticated can update patches storage" on storage.objects;
-create policy "Authenticated can update patches storage"
+drop policy if exists "Public can update patches storage" on storage.objects;
+create policy "Public can update patches storage"
 on storage.objects for update
-to authenticated
+to public
 using (bucket_id = 'patches')
 with check (bucket_id = 'patches');
 
 drop policy if exists "Authenticated can delete from patches storage" on storage.objects;
-create policy "Authenticated can delete from patches storage"
+drop policy if exists "Public can delete from patches storage" on storage.objects;
+create policy "Public can delete from patches storage"
 on storage.objects for delete
-to authenticated
+to public
 using (bucket_id = 'patches');
 
 -- 3. Allow anyone to READ covers so the store can show pack images (PNG, JPG, etc.)

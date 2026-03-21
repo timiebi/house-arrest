@@ -14,11 +14,11 @@ type OrderItemRow = {
   patch_id: string;
   quantity: number;
   price_cents: number;
-  patches?: { id: string; name: string; file_path: string | null } | { id: string; name: string; file_path: string | null }[] | null;
+  patches?: { id: string; name: string } | { id: string; name: string }[] | null;
 };
 
 type OrderItem = OrderItemRow & {
-  patches?: { id: string; name: string; file_path: string | null } | null;
+  patches?: { id: string; name: string } | null;
 };
 
 type Order = {
@@ -32,6 +32,7 @@ type Order = {
 function ThankYouContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id');
+  const token = searchParams.get('token');
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(!!orderId);
@@ -53,7 +54,7 @@ function ThankYouContent() {
         .from('order_items')
         .select(`
           id, order_id, patch_id, quantity, price_cents,
-          patches ( id, name, file_path )
+          patches ( id, name )
         `)
         .eq('order_id', orderId);
       const rows = (itemsData as OrderItemRow[] | null) || [];
@@ -66,8 +67,8 @@ function ThankYouContent() {
     load();
   }, [orderId]);
 
-  const downloadUrl = (patchId: string) => {
-    return `/api/download?order_id=${orderId}&patch_id=${patchId}`;
+  const downloadUrl = () => {
+    return `/api/download?token=${encodeURIComponent(token || '')}`;
   };
 
   if (!orderId) {
@@ -128,17 +129,15 @@ function ThankYouContent() {
           <ul className="mt-8 space-y-4">
             {items.map((item) => {
               const name = item.patches?.name ?? `Pack ${item.patch_id}`;
-              const filePath = item.patches?.file_path;
-              const hasFile = filePath && filePath !== 'placeholder/pending';
               return (
                 <li
                   key={item.id}
                   className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-[var(--border-subtle)] last:border-0"
                 >
                   <span className="text-body-sm font-semibold text-[var(--text-primary)]">{name}</span>
-                  {hasFile ? (
+                  {token ? (
                     <a
-                      href={downloadUrl(item.patch_id)}
+                      href={downloadUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 px-4 py-2 rounded-lg text-body-sm font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 transition active:scale-[0.98]"
@@ -146,7 +145,7 @@ function ThankYouContent() {
                       Download
                     </a>
                   ) : (
-                    <span className="text-body-sm text-[var(--text-muted)]">File not ready yet</span>
+                    <span className="text-body-sm text-[var(--text-muted)]">Download link missing</span>
                   )}
                 </li>
               );

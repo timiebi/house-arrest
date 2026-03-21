@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import LogoLoader from '@/components/LogoLoader';
+import { validatePreviewUrls, isLikelyPreviewAudioFile } from '@/lib/validatePreviewUrls';
 
 const BUCKET = 'patches';
 
@@ -23,10 +24,10 @@ export default function EditPatchPage() {
     price_cents: 990,
     currency: 'USD',
     status: 'draft' as 'draft' | 'published',
+    delivery_url: '',
     soundcloud_url: '',
     youtube_url: '',
   });
-  const [packFile, setPackFile] = useState<File | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
 
@@ -46,6 +47,7 @@ export default function EditPatchPage() {
         price_cents: p.price_cents,
         currency: p.currency,
         status: p.status,
+        delivery_url: p.delivery_url ?? '',
         soundcloud_url: p.soundcloud_url ?? '',
         youtube_url: p.youtube_url ?? '',
       });
@@ -65,7 +67,10 @@ export default function EditPatchPage() {
       file.type ||
       (extLower === 'zip' ? 'application/zip' : undefined) ||
       (extLower === 'wav' ? 'audio/wav' : undefined) ||
-      (extLower === 'mp3' ? 'audio/mpeg' : undefined);
+      (extLower === 'mp3' || extLower === 'mpeg' ? 'audio/mpeg' : undefined) ||
+      (extLower === 'm4a' || extLower === 'mp4' ? 'audio/mp4' : undefined) ||
+      (extLower === 'ogg' ? 'audio/ogg' : undefined) ||
+      (extLower === 'flac' ? 'audio/flac' : undefined);
 
     const uploadOptions: { upsert: boolean; contentType?: string } = { upsert: true };
     if (inferredContentType) uploadOptions.contentType = inferredContentType;
@@ -93,14 +98,17 @@ export default function EditPatchPage() {
     setSaving(true);
     setError(null);
 
-    let file_path: string | undefined;
-    if (packFile) {
-      const path = await uploadFile(packFile, 'audio');
-      if (!path) {
-        setSaving(false);
-        return;
-      }
-      file_path = path;
+    const urlErr = validatePreviewUrls(form.youtube_url, form.soundcloud_url);
+    if (urlErr) {
+      setError(urlErr);
+      setSaving(false);
+      return;
+    }
+
+    if (previewFile && !isLikelyPreviewAudioFile(previewFile)) {
+      setError('Preview upload should be an audio file (e.g. MP3, WAV, M4A).');
+      setSaving(false);
+      return;
     }
 
     let image_path: string | null | undefined;
@@ -133,11 +141,11 @@ export default function EditPatchPage() {
       price_cents: Number(form.price_cents) || 0,
       currency: form.currency,
       status: form.status,
+      delivery_url: form.delivery_url.trim() || null,
       soundcloud_url: form.soundcloud_url.trim() || null,
       youtube_url: form.youtube_url.trim() || null,
       updated_at: new Date().toISOString(),
     };
-    if (file_path !== undefined) updatePayload.file_path = file_path;
     if (image_path !== undefined) updatePayload.image_path = image_path;
     if (image_url !== undefined) updatePayload.image_url = image_url;
     if (preview_path !== undefined) updatePayload.preview_path = preview_path;
@@ -152,7 +160,6 @@ export default function EditPatchPage() {
     }
     setSuccessMessage('Sample pack updated');
     setTimeout(() => setSuccessMessage(null), 3000);
-    setPackFile(null);
     setImageFile(null);
     setPreviewFile(null);
     fetchPatch();
@@ -177,8 +184,6 @@ export default function EditPatchPage() {
       </div>
     );
   }
-
-  const hasCurrentFile = patch.file_path && patch.file_path !== 'placeholder/pending';
 
   return (
     <div className="p-6 max-w-2xl">
@@ -234,17 +239,15 @@ export default function EditPatchPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Replace pack file (full pack ZIP)</label>
-          <p className="text-xs text-[var(--text-muted)] mb-1.5">
-            {hasCurrentFile ? 'Current: file uploaded. Upload a new ZIP to replace it.' : 'Current: no file. Upload a ZIP to make this pack downloadable.'}
-          </p>
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Paid pack link (Google Drive)</label>
           <input
-            type="file"
-            accept=".zip,audio/*,.wav,.mp3"
-            onChange={(e) => setPackFile(e.target.files?.[0] || null)}
-            className="w-full text-xs text-[var(--text-secondary)] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[var(--accent-solid)] file:text-white file:text-xs"
+            type="url"
+            value={form.delivery_url}
+            onChange={(e) => setForm((f) => ({ ...f, delivery_url: e.target.value }))}
+            placeholder="https://drive.google.com/..."
+            className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
           />
-          <p className="mt-1 text-xs text-[var(--text-muted)]">Recommended under 100MB.</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Used by secure download after purchase.</p>
         </div>
         <div>
           <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Replace cover image</label>
@@ -256,16 +259,18 @@ export default function EditPatchPage() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Replace preview audio (short MP3)</label>
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">Replace preview audio</label>
           <input
             type="file"
-            accept="audio/mpeg,audio/mp3,.mp3"
+            accept="audio/*,.mp3,.mpeg,.wav,.m4a,.aac,.ogg,.flac"
             onChange={(e) => setPreviewFile(e.target.files?.[0] || null)}
             className="w-full text-xs text-[var(--text-secondary)] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[var(--bg-elevated)] file:text-[var(--text-primary)] file:text-xs"
           />
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Uploaded preview is shown first; then SoundCloud; then YouTube.</p>
         </div>
         <div>
           <p className="text-xs font-medium text-[var(--text-secondary)] mb-1.5">Preview — YouTube or SoundCloud</p>
+          <p className="text-xs text-[var(--text-muted)] mb-2">Optional. URLs are validated. You can keep links even if you upload a file (upload plays first).</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-[var(--text-muted)] mb-1">YouTube</label>

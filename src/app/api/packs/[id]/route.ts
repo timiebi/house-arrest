@@ -20,7 +20,7 @@ export async function GET(
 
   const { data: p, error } = await supabase
     .from('patches')
-    .select('id, name, description, price_cents, currency, image_path, image_url, preview_url, soundcloud_url, youtube_url, status, file_path')
+    .select('id, name, description, price_cents, currency, image_path, image_url, preview_url, soundcloud_url, youtube_url, status, file_path, delivery_url')
     .eq('id', id)
     .eq('status', 'published')
     .single();

@@ -5,6 +5,7 @@ import type { Patch, PatchInsert } from '@/types/patches';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import LogoLoader from '@/components/LogoLoader';
+import { validatePreviewUrls, isLikelyPreviewAudioFile } from '@/lib/validatePreviewUrls';
 
 const BUCKET = 'patches';
 
@@ -18,10 +19,10 @@ export default function DashboardPatchesPage() {
     price_cents: 990,
     currency: 'USD',
     status: 'draft' as 'draft' | 'published',
+    delivery_url: '',
     soundcloud_url: '',
     youtube_url: '',
   });
-  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +51,10 @@ export default function DashboardPatchesPage() {
       file.type ||
       (extLower === 'zip' ? 'application/zip' : undefined) ||
       (extLower === 'wav' ? 'audio/wav' : undefined) ||
-      (extLower === 'mp3' ? 'audio/mpeg' : undefined);
+      (extLower === 'mp3' || extLower === 'mpeg' ? 'audio/mpeg' : undefined) ||
+      (extLower === 'm4a' || extLower === 'mp4' ? 'audio/mp4' : undefined) ||
+      (extLower === 'ogg' ? 'audio/ogg' : undefined) ||
+      (extLower === 'flac' ? 'audio/flac' : undefined);
 
     const uploadOptions: { upsert: boolean; contentType?: string } = { upsert: true };
     if (inferredContentType) uploadOptions.contentType = inferredContentType;
@@ -82,17 +86,20 @@ export default function DashboardPatchesPage() {
     setSaving(true);
     setError(null);
 
-    let filePath: string;
-    if (audioFile) {
-      const path = await uploadFile(audioFile, 'audio');
-      if (!path) {
-        setSaving(false);
-        return;
-      }
-      filePath = path;
-    } else {
-      filePath = 'placeholder/pending';
+    const urlErr = validatePreviewUrls(form.youtube_url, form.soundcloud_url);
+    if (urlErr) {
+      setError(urlErr);
+      setSaving(false);
+      return;
     }
+
+    if (previewFile && !isLikelyPreviewAudioFile(previewFile)) {
+      setError('Preview upload should be an audio file (e.g. MP3, WAV, M4A).');
+      setSaving(false);
+      return;
+    }
+
+    const filePath = 'placeholder/pending';
 
     let image_path: string | null = null;
     let image_url: string | null = null;
@@ -124,6 +131,7 @@ export default function DashboardPatchesPage() {
       price_cents: Number(form.price_cents) || 0,
       currency: form.currency,
       file_path: filePath,
+      delivery_url: form.delivery_url.trim() || null,
       image_path,
       image_url,
       preview_path,
@@ -141,8 +149,7 @@ export default function DashboardPatchesPage() {
       return;
     }
 
-    setForm({ name: '', description: '', price_cents: 990, currency: 'USD', status: 'draft', soundcloud_url: '', youtube_url: '' });
-    setAudioFile(null);
+    setForm({ name: '', description: '', price_cents: 990, currency: 'USD', status: 'draft', delivery_url: '', soundcloud_url: '', youtube_url: '' });
     setImageFile(null);
     setPreviewFile(null);
     setSuccessMessage('Sample pack added');
@@ -160,9 +167,28 @@ export default function DashboardPatchesPage() {
     fetchPatches();
   };
 
-  const deletePatch = async (id: string) => {
+  const deletePatch = async (patch: Patch) => {
     if (!confirm('Delete this sample pack? This cannot be undone.')) return;
-    await supabase.from('patches').delete().eq('id', id);
+    setError(null);
+
+    const storagePaths = [patch.file_path, patch.image_path, patch.preview_path].filter(
+      (path): path is string => Boolean(path) && path !== 'placeholder/pending'
+    );
+
+    if (storagePaths.length > 0) {
+      const { error: storageDeleteError } = await supabase.storage.from(BUCKET).remove(storagePaths);
+      if (storageDeleteError) {
+        setError(`Delete failed. Could not remove files from storage: ${storageDeleteError.message}`);
+        return;
+      }
+    }
+
+    const { error: deleteError } = await supabase.from('patches').delete().eq('id', patch.id);
+    if (deleteError) {
+      setError(`Delete failed. Could not remove pack: ${deleteError.message}`);
+      return;
+    }
+
     fetchPatches();
   };
 
@@ -225,14 +251,15 @@ export default function DashboardPatchesPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-label text-[var(--text-secondary)] mb-1.5">Full pack (ZIP) — optional</label>
+              <label className="block text-label text-[var(--text-secondary)] mb-1.5">Paid pack link (Google Drive)</label>
               <input
-                type="file"
-                accept=".zip,audio/*,.wav,.mp3"
-                onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                className="w-full text-xs text-[var(--text-secondary)] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[var(--accent-solid)] file:text-white file:text-xs"
+                type="url"
+                value={form.delivery_url}
+                onChange={(e) => setForm((f) => ({ ...f, delivery_url: e.target.value }))}
+                placeholder="https://drive.google.com/..."
+                className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-solid)]"
               />
-              <p className="mt-1 text-caption">Optional full ZIP pack (recommended under 100MB).</p>
+              <p className="mt-1 text-caption">Required to deliver the paid full pack after purchase.</p>
             </div>
             <div>
               <label className="block text-label text-[var(--text-secondary)] mb-1.5">Cover image (optional)</label>
@@ -244,18 +271,21 @@ export default function DashboardPatchesPage() {
               />
             </div>
             <div>
-              <label className="block text-label text-[var(--text-secondary)] mb-1.5">Preview audio (optional, short MP3)</label>
+              <label className="block text-label text-[var(--text-secondary)] mb-1.5">Preview audio (optional)</label>
               <input
                 type="file"
-                accept="audio/mpeg,audio/mp3,.mp3"
+                accept="audio/*,.mp3,.mpeg,.wav,.m4a,.aac,.ogg,.flac"
                 onChange={(e) => setPreviewFile(e.target.files?.[0] || null)}
                 className="w-full text-xs text-[var(--text-secondary)] file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-[var(--bg-elevated)] file:text-[var(--text-primary)] file:text-xs"
               />
+              <p className="mt-1 text-caption">Hosted on your storage. Shown first if set.</p>
             </div>
           </div>
           <div>
-            <p className="text-label text-[var(--text-secondary)] mb-1.5">Preview (optional) — YouTube or SoundCloud</p>
-            <p className="text-caption mb-2">Paste the YouTube or SoundCloud URL for the short sample (30–60 sec). Customers hear this before buying; the full pack is delivered after purchase.</p>
+            <p className="text-label text-[var(--text-secondary)] mb-1.5">Preview links (optional) — YouTube or SoundCloud</p>
+            <p className="text-caption mb-2">
+              You can add a file above <strong>and</strong> links here. The store plays <strong>uploaded audio first</strong>, then SoundCloud, then YouTube.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-label mb-1">YouTube</label>
@@ -351,7 +381,7 @@ export default function DashboardPatchesPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => deletePatch(p.id)}
+                        onClick={() => deletePatch(p)}
                         className="text-xs font-medium text-red-400 hover:underline"
                       >
                         Delete

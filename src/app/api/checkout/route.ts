@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createHash, randomBytes } from 'crypto';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -46,9 +47,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: itemError.message }, { status: 500 });
     }
 
-    // TODO: send post-purchase email with link to /purchase/thank-you?order_id=...
+    const rawToken = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+    const { error: grantError } = await supabase.from('download_grants').insert({
+      order_id: order.id,
+      patch_id: pack_id,
+      token_hash: tokenHash,
+      downloads_remaining: 5,
+    });
 
-    return NextResponse.json({ order_id: order.id });
+    if (grantError) {
+      return NextResponse.json({ error: grantError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ order_id: order.id, download_token: rawToken });
   } catch (e) {
     return NextResponse.json({ error: 'Checkout failed' }, { status: 500 });
   }
