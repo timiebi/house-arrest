@@ -10,7 +10,7 @@ import { packHasAnyPreviewField } from '@/lib/packPreview';
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 function formatPrice(cents: number, currency: string) {
@@ -24,7 +24,6 @@ const stagger = 0.06;
 
 export default function PackDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const toast = useToast();
   const reducedMotion = useReducedMotion();
   const id = params?.id as string;
@@ -59,21 +58,21 @@ export default function PackDetailPage() {
     }
     setBuying(true);
     try {
-      const res = await fetch('/api/checkout', {
+      const res = await fetch('/api/paystack/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pack_id: pack.id, pack_name: pack.name, price_cents: pack.price_cents, currency: pack.currency }),
+        body: JSON.stringify({ pack_id: pack.id }),
       });
       const data = await res.json();
-      if (data.order_id && data.download_token) {
-        router.push(`/purchase/thank-you?order_id=${data.order_id}&token=${encodeURIComponent(data.download_token)}`);
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url as string;
       } else {
         setBuying(false);
-        toast.error(data.error || 'Checkout failed.');
+        toast.error(data.error || 'Could not start payment.');
       }
     } catch (e) {
       setBuying(false);
-      toast.error('Checkout failed.');
+      toast.error('Could not start payment.');
     }
   };
 

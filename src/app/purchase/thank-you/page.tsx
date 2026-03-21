@@ -4,81 +4,78 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
 import SiteNav from '@/components/SiteNav';
 import LogoLoader from '@/components/LogoLoader';
 
-type OrderItemRow = {
+type OrderItem = {
   id: string;
-  order_id: string;
   patch_id: string;
   quantity: number;
   price_cents: number;
-  patches?: { id: string; name: string } | { id: string; name: string }[] | null;
-};
-
-type OrderItem = OrderItemRow & {
-  patches?: { id: string; name: string } | null;
-};
-
-type Order = {
-  id: string;
-  email: string;
-  total_cents: number;
-  currency: string;
-  status: string;
+  patch_name?: string | null;
 };
 
 function ThankYouContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('order_id');
-  const token = searchParams.get('token');
-  const [order, setOrder] = useState<Order | null>(null);
+  const reference = searchParams.get('reference');
   const [items, setItems] = useState<OrderItem[]>([]);
-  const [loading, setLoading] = useState(!!orderId);
+  const [token, setToken] = useState<string | null>(null);
+  const [status, setStatus] = useState<'pending' | 'paid' | 'failed'>('pending');
+  const [loading, setLoading] = useState(!!reference);
 
   useEffect(() => {
-    if (!orderId) {
+    if (!reference) {
       setLoading(false);
       return;
     }
-    const load = async () => {
-      const { data: orderData } = await supabase
-        .from('orders')
-        .select('id, email, total_cents, currency, status')
-        .eq('id', orderId)
-        .single();
-      if (orderData) setOrder(orderData as Order);
+    let stop = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
-      const { data: itemsData } = await supabase
-        .from('order_items')
-        .select(`
-          id, order_id, patch_id, quantity, price_cents,
-          patches ( id, name )
-        `)
-        .eq('order_id', orderId);
-      const rows = (itemsData as OrderItemRow[] | null) || [];
-      setItems(rows.map((row) => ({
-        ...row,
-        patches: Array.isArray(row.patches) ? row.patches[0] ?? null : row.patches ?? null,
-      })));
-      setLoading(false);
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/paystack/status?reference=${encodeURIComponent(reference)}`);
+        const data = await res.json();
+        if (stop) return;
+        if (data.status === 'paid' || data.status === 'fulfilled') {
+          setStatus('paid');
+          setItems((data.items || []) as OrderItem[]);
+          setToken((data.token as string | null) || null);
+          setLoading(false);
+          return;
+        }
+        if (data.status === 'failed') {
+          setStatus('failed');
+          setLoading(false);
+          return;
+        }
+        setStatus('pending');
+        setLoading(false);
+        timer = setTimeout(poll, 2500);
+      } catch {
+        if (stop) return;
+        timer = setTimeout(poll, 3000);
+      }
     };
-    load();
-  }, [orderId]);
+
+    poll();
+    return () => {
+      stop = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [reference]);
 
   const downloadUrl = () => {
     return `/api/download?token=${encodeURIComponent(token || '')}`;
   };
 
-  if (!orderId) {
+  if (!reference) {
     return (
       <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
         <SiteNav />
         <div className="pt-14 md:pt-16" />
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
-          <h1 className="text-page-title text-[var(--text-primary)]">Missing order</h1>
-          <p className="mt-2 text-body-sm text-[var(--text-muted)]">No order ID provided.</p>
+          <h1 className="text-page-title text-[var(--text-primary)]">Missing payment reference</h1>
+          <p className="mt-2 text-body-sm text-[var(--text-muted)]">No payment reference was provided.</p>
           <Link href="/marketplace" className="mt-6 inline-block text-link-accent hover:underline">Back to store</Link>
         </div>
       </main>
@@ -120,15 +117,29 @@ function ThankYouContent() {
             </svg>
           </motion.div>
           <h1 className="text-page-title text-[var(--text-primary)] text-center">
-            Thanks for your purchase
+            {status === 'pending' ? 'Processing payment' : 'Thanks for your purchase'}
           </h1>
           <p className="mt-2 text-body-sm text-[var(--text-secondary)] text-center">
-            Your order is confirmed. Download your sample packs below.
+            {status === 'pending'
+              ? 'We are confirming your payment. This usually takes a few seconds.'
+              : 'Your order is confirmed. Download your sample packs below.'}
           </p>
+
+          {status === 'pending' && (
+            <p className="mt-4 text-xs text-[var(--text-muted)] text-center">
+              This page refreshes automatically once Paystack confirms payment.
+            </p>
+          )}
+
+          {status === 'failed' && (
+            <p className="mt-4 text-sm text-red-400 text-center">
+              Payment was not successful. Please try again.
+            </p>
+          )}
 
           <ul className="mt-8 space-y-4">
             {items.map((item) => {
-              const name = item.patches?.name ?? `Pack ${item.patch_id}`;
+              const name = item.patch_name ?? `Pack ${item.patch_id}`;
               return (
                 <li
                   key={item.id}
@@ -145,7 +156,9 @@ function ThankYouContent() {
                       Download
                     </a>
                   ) : (
-                    <span className="text-body-sm text-[var(--text-muted)]">Download link missing</span>
+                    <span className="text-body-sm text-[var(--text-muted)]">
+                      {status === 'pending' ? 'Preparing download…' : 'Download link not ready yet'}
+                    </span>
                   )}
                 </li>
               );

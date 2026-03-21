@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const PREVIEW_AUDIO_PLAY_EVENT = 'preview-audio:play';
+
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
   const m = Math.floor(seconds / 60);
@@ -19,6 +21,7 @@ type PreviewAudioPlayerProps = {
 
 export default function PreviewAudioPlayer({ src, title, compact, className = '' }: PreviewAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const playerIdRef = useRef(`preview-${Math.random().toString(36).slice(2)}`);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
@@ -46,7 +49,15 @@ export default function PreviewAudioPlayer({ src, title, compact, className = ''
     setDuration(0);
     setLoadError(null);
 
-    const onPlay = () => setPlaying(true);
+    const onPlay = () => {
+      setPlaying(true);
+      // Notify other preview players to pause.
+      window.dispatchEvent(
+        new CustomEvent(PREVIEW_AUDIO_PLAY_EVENT, {
+          detail: { playerId: playerIdRef.current },
+        })
+      );
+    };
     const onPause = () => setPlaying(false);
     const onTime = () => setCurrent(el.currentTime);
     const onDuration = () => {
@@ -67,6 +78,13 @@ export default function PreviewAudioPlayer({ src, title, compact, className = ''
       setMuted(el.muted);
     };
 
+    const onOtherPlayerPlay = (event: Event) => {
+      const custom = event as CustomEvent<{ playerId?: string }>;
+      const otherId = custom.detail?.playerId;
+      if (!otherId || otherId === playerIdRef.current) return;
+      if (!el.paused) el.pause();
+    };
+
     el.addEventListener('play', onPlay);
     el.addEventListener('pause', onPause);
     el.addEventListener('timeupdate', onTime);
@@ -75,6 +93,7 @@ export default function PreviewAudioPlayer({ src, title, compact, className = ''
     el.addEventListener('ended', onEnded);
     el.addEventListener('error', onError);
     el.addEventListener('volumechange', onVolume);
+    window.addEventListener(PREVIEW_AUDIO_PLAY_EVENT, onOtherPlayerPlay as EventListener);
 
     return () => {
       el.removeEventListener('play', onPlay);
@@ -85,6 +104,7 @@ export default function PreviewAudioPlayer({ src, title, compact, className = ''
       el.removeEventListener('ended', onEnded);
       el.removeEventListener('error', onError);
       el.removeEventListener('volumechange', onVolume);
+      window.removeEventListener(PREVIEW_AUDIO_PLAY_EVENT, onOtherPlayerPlay as EventListener);
     };
   }, [src]);
 
