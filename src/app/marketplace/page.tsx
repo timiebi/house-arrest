@@ -1,12 +1,12 @@
 'use client';
 
 import LogoLoader from '@/components/LogoLoader';
-import SiteNav from '@/components/SiteNav';
 import PackPreviewBlock from '@/components/PackPreviewBlock';
 import { ScrollUpButton } from '@/components/scrollUpButton';
+import SiteNav from '@/components/SiteNav';
 import { duration, ease, fadeUp, staggerDelay, viewportOnce } from '@/lib/animations';
-import type { Patch } from '@/types/patches';
 import { packHasAnyPreviewField } from '@/lib/packPreview';
+import type { Patch } from '@/types/patches';
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -43,7 +43,7 @@ export default function MarketplacePage() {
   return (
     <main className="w-full min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] overflow-x-hidden">
       <SiteNav />
-      <div className="pt-14 md:pt-16" />
+      <div className="pt-10 md:pt-0" />
 
       {/* Hero — sample packs headline */}
       <section className="relative w-full px-4 sm:px-6 md:px-8 py-16 md:py-24 lg:py-28 max-w-5xl mx-auto overflow-hidden">
@@ -108,7 +108,7 @@ export default function MarketplacePage() {
         {!loading && error && (
           <div className="text-center py-16 bg-[var(--bg-card)] border border-[var(--border-subtle)] px-6">
             <p className="text-body-sm text-[var(--text-muted)]">
-              Unable to load sample packs. Add the <code className="bg-[var(--bg-elevated)] px-1.5 py-0.5 rounded">patches</code> table in Supabase.
+              We could not load sample packs right now. Please refresh and try again.
             </p>
           </div>
         )}

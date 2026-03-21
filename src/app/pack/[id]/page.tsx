@@ -147,17 +147,17 @@ export default function PackDetailPage() {
                 initial={scaleFade.hidden}
                 animate={scaleFade.visible}
                 transition={{ ...transition, duration: reducedMotion ? 0 : duration.medium }}
-                className="overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] aspect-[4/3]"
+                className="overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] aspect-[5/6]"
               >
                 <img
                   src={pack.image_url}
                   alt=""
-                  className="w-full h-full object-contain bg-[var(--bg-elevated)]"
+                  className="w-full h-full object-cover bg-[var(--bg-elevated)]"
                   sizes="(max-width: 1024px) 100vw, 600px"
                 />
               </motion.div>
             ) : (
-              <div className="overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] aspect-[4/3] flex items-center justify-center">
+              <div className="overflow-hidden bg-[var(--bg-elevated)] border border-[var(--border-subtle)] aspect-[5/4] flex items-center justify-center">
                 <span className="text-6xl text-[var(--text-muted)]/40" aria-hidden>
                   ♪
                 </span>

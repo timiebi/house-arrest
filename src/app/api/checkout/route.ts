@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       .single();
 
     if (orderError || !order) {
-      return NextResponse.json({ error: orderError?.message || 'Failed to create order' }, { status: 500 });
+      return NextResponse.json({ error: 'Could not start checkout right now. Please try again.' }, { status: 500 });
     }
 
     const { error: itemError } = await supabase.from('order_items').insert({
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     });
 
     if (itemError) {
-      return NextResponse.json({ error: itemError.message }, { status: 500 });
+      return NextResponse.json({ error: 'Could not add this pack to your order. Please try again.' }, { status: 500 });
     }
 
     const rawToken = randomBytes(32).toString('hex');
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     });
 
     if (grantError) {
-      return NextResponse.json({ error: grantError.message }, { status: 500 });
+      return NextResponse.json({ error: 'Could not prepare your download link. Please try again.' }, { status: 500 });
     }
 
     return NextResponse.json({ order_id: order.id, download_token: rawToken });
