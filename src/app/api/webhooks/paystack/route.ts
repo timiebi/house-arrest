@@ -90,13 +90,29 @@ export async function POST(request: Request) {
 
   const { data: currentOrder } = await supabase
     .from('orders')
-    .select('id, status')
+    .select('id, status, charged_amount_minor, charged_currency')
     .eq('id', orderId)
     .single();
 
   // Idempotency guard: payment already fulfilled.
   if (currentOrder?.status === 'paid' || currentOrder?.status === 'fulfilled') {
     return NextResponse.json({ ok: true, alreadyFulfilled: true }, { status: 200 });
+  }
+
+  const chargedAmount = Number(event.data?.amount || 0);
+  const chargedCurrency = (event.data?.currency || '').toUpperCase();
+  if (
+    currentOrder?.charged_amount_minor &&
+    currentOrder.charged_amount_minor !== chargedAmount
+  ) {
+    return NextResponse.json({ error: 'Amount mismatch' }, { status: 400 });
+  }
+  if (
+    currentOrder?.charged_currency &&
+    chargedCurrency &&
+    currentOrder.charged_currency.toUpperCase() !== chargedCurrency
+  ) {
+    return NextResponse.json({ error: 'Currency mismatch' }, { status: 400 });
   }
 
   await supabase

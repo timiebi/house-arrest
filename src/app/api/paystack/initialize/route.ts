@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { extractGoogleDriveFileId } from '@/lib/drive';
+import { getUsdToNgnRate, usdCentsToNgnKobo } from '@/lib/fx';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -32,12 +33,29 @@ export async function POST(request: Request) {
     }
 
     const buyerEmail = typeof email === 'string' && email.trim() ? email.trim() : 'customer@example.com';
+    const baseCurrency = (pack.currency || 'USD').toUpperCase();
+    const baseAmountMinor = Math.max(0, Number(pack.price_cents) || 0);
+    let paystackCurrency = baseCurrency;
+    let paystackAmountMinor = baseAmountMinor;
+    let fxRate: number | null = null;
+
+    // If packs are priced in USD, transparently charge in NGN for Paystack.
+    if (baseCurrency === 'USD') {
+      fxRate = await getUsdToNgnRate();
+      paystackCurrency = 'NGN';
+      paystackAmountMinor = usdCentsToNgnKobo(baseAmountMinor, fxRate);
+    }
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
         email: buyerEmail,
-        total_cents: pack.price_cents,
-        currency: pack.currency || 'USD',
+        total_cents: paystackAmountMinor,
+        currency: paystackCurrency,
+        charged_currency: paystackCurrency,
+        charged_amount_minor: paystackAmountMinor,
+        usd_price_cents: baseCurrency === 'USD' ? baseAmountMinor : null,
+        fx_rate: fxRate,
         status: 'pending',
       })
       .select('id')
@@ -52,13 +70,18 @@ export async function POST(request: Request) {
     const callbackUrl = `${appUrl}/purchase/thank-you`;
     const payload = {
       email: buyerEmail,
-      amount: Number(pack.price_cents) || 0,
-      currency: pack.currency || 'USD',
+      amount: paystackAmountMinor,
+      currency: paystackCurrency,
       callback_url: callbackUrl,
       metadata: {
         order_id: order.id,
         productId: pack.id,
         driveFileId: driveFileId,
+        displayCurrency: baseCurrency,
+        displayAmountMinor: baseAmountMinor,
+        chargedCurrency: paystackCurrency,
+        chargedAmountMinor: paystackAmountMinor,
+        fxRate: fxRate,
       },
     };
 

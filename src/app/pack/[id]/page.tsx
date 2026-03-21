@@ -176,6 +176,11 @@ export default function PackDetailPage() {
                 <span className="text-3xl sm:text-4xl font-semibold text-[var(--accent-via)] tracking-tight">
                   {formatPrice(pack.price_cents, pack.currency)}
                 </span>
+                {pack.currency?.toUpperCase() === 'USD' && (
+                  <p className="mt-1 text-caption">
+                    You will be charged in NGN at checkout using the current exchange rate.
+                  </p>
+                )}
               </div>
 
               <motion.button

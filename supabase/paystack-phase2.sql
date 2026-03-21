@@ -3,7 +3,11 @@
 -- Orders: explicit lifecycle and unique Paystack reference for idempotency.
 alter table public.orders
   add column if not exists paystack_reference text,
-  add column if not exists status text default 'pending';
+  add column if not exists status text default 'pending',
+  add column if not exists charged_currency text,
+  add column if not exists charged_amount_minor integer,
+  add column if not exists usd_price_cents integer,
+  add column if not exists fx_rate numeric(14,6);
 
 create unique index if not exists idx_orders_paystack_reference_unique
   on public.orders(paystack_reference)
