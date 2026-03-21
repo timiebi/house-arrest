@@ -46,7 +46,11 @@ function ThankYouContent() {
       // Paystack redirect flow — verify payment and get download token
       const verify = async () => {
         try {
-          const res = await fetch(`/api/verify-payment?reference=${encodeURIComponent(reference)}`);
+          const res = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reference }),
+          });
           const data = await res.json();
           if (!res.ok) {
             setError(data.error || 'Could not verify payment.');

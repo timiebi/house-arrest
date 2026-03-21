@@ -2,22 +2,21 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { v7 as uuidv7 } from 'uuid';
 
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY!;
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!;
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { pack_id, currency, email } = body as {
+    const { pack_id, email } = body as {
       pack_id: string;
-      currency: string;
       email: string;
     };
 
-    const trimmedPackId = pack_id.trim();
-    const trimmedEmail = email.trim();
+    const trimmedPackId = (pack_id ?? '').trim();
+    const trimmedEmail = (email ?? '').trim();
 
     if (!trimmedPackId) {
       return NextResponse.json({ error: 'sample pack not found' }, { status: 400 });
@@ -28,8 +27,8 @@ export async function POST(request: Request) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const orderCurrency = 'NGN' // paystack test mode doesn't support USD, so we default to NGN for now
 
+    // Look up the pack server-side — never trust client-supplied price/currency
     const { data: packInfo, error: packError } = await supabase
       .from('patches')
       .select('id, name, price_cents, currency, file_path, delivery_url, status')
@@ -41,16 +40,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'sample pack not found' }, { status: 404 });
     }
 
-    // we generate a unique reference for the order to pass to Paystack
+    const orderCurrency = 'NGN'; // Paystack test mode doesn't support USD
     const ref = `sl_${uuidv7()}`;
 
     // Create order with pending status — only marked paid after Paystack confirms
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
-        email: email.trim(),
+        email: trimmedEmail,
         total_cents: packInfo.price_cents,
-        currency: 'NGN',
+        currency: orderCurrency,
         status: 'pending',
         paystack_reference: ref,
       })
@@ -61,25 +60,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Could not start checkout right now. Please try again.' }, { status: 500 });
     }
 
+    // Persist order item using server-derived pack data
+    const { error: itemError } = await supabase.from('order_items').insert({
+      order_id: order.id,
+      patch_id: packInfo.id,
+      quantity: 1,
+      price_cents: packInfo.price_cents,
+    });
+
+    if (itemError) {
+      return NextResponse.json({ error: 'Could not add this pack to your order. Please try again.' }, { status: 500 });
+    }
+
     // Initialize Paystack transaction
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || '';
-    const callbackUrl = `${origin}/purchase/thank - you`;
+    const callbackUrl = `${siteUrl}/purchase/thank-you`;
 
     const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${paystackSecretKey} `,
+        Authorization: `Bearer ${paystackSecretKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         email: trimmedEmail,
-        amount: packInfo.price_cents, // Paystack expects amount in the smallest currency unit (kobo/cents)
+        amount: packInfo.price_cents,
         currency: orderCurrency,
         callback_url: callbackUrl,
         reference: ref,
         metadata: {
           order_id: order.id,
-          pack_id,
+          pack_id: packInfo.id,
         },
       }),
     });
