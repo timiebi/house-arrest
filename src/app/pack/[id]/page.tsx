@@ -10,7 +10,7 @@ import { packHasAnyPreviewField } from '@/lib/packPreview';
 import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 function formatPrice(cents: number, currency: string) {
@@ -24,13 +24,13 @@ const stagger = 0.06;
 
 export default function PackDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const toast = useToast();
   const reducedMotion = useReducedMotion();
   const id = params?.id as string;
   const [pack, setPack] = useState<Patch | null>(null);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
+  const [email, setEmail] = useState('');
   const transition = reducedMotion ? { duration: 0 } : { duration: duration.normal, ease: ease.out };
 
   useEffect(() => {
@@ -57,21 +57,25 @@ export default function PackDetailPage() {
       toast.info('This is a demo pack. Add real sample packs in the dashboard to enable purchases.');
       return;
     }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
     setBuying(true);
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pack_id: pack.id, pack_name: pack.name, price_cents: pack.price_cents, currency: pack.currency }),
+        body: JSON.stringify({ pack_id: pack.id, pack_name: pack.name, price_cents: pack.price_cents, currency: pack.currency, email: email.trim() }),
       });
       const data = await res.json();
-      if (data.order_id && data.download_token) {
-        router.push(`/purchase/thank-you?order_id=${data.order_id}&token=${encodeURIComponent(data.download_token)}`);
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
       } else {
         setBuying(false);
         toast.error(data.error || 'Checkout failed.');
       }
-    } catch (e) {
+    } catch {
       setBuying(false);
       toast.error('Checkout failed.');
     }
@@ -179,13 +183,27 @@ export default function PackDetailPage() {
                 </span>
               </div>
 
+              <div className="mt-5">
+                <label htmlFor="email" className="text-caption text-[var(--text-muted)] mb-1.5 block">
+                  Email for delivery
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-none bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:border-transparent transition"
+                />
+              </div>
+
               <motion.button
                 type="button"
                 disabled={buying}
                 onClick={handleBuy}
                 whileHover={reducedMotion ? undefined : { scale: 1.02 }}
                 whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-                className="mt-5 w-full px-8 py-4 rounded-none cursor-pointer text-body font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)]"
+                className="mt-3 w-full px-8 py-4 rounded-none cursor-pointer text-body font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none focus:ring-2 focus:ring-[var(--accent-solid)] focus:ring-offset-2 focus:ring-offset-[var(--bg-page)]"
               >
                 {buying ? 'Processing…' : 'Buy — instant download'}
               </motion.button>

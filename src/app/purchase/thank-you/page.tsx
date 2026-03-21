@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
 import SiteNav from '@/components/SiteNav';
 import LogoLoader from '@/components/LogoLoader';
 
@@ -31,54 +30,62 @@ type Order = {
 
 function ThankYouContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('order_id');
-  const token = searchParams.get('token');
+  const reference = searchParams.get('reference');
+  // Legacy support: also check for direct order_id + token params
+  const legacyOrderId = searchParams.get('order_id');
+  const legacyToken = searchParams.get('token');
+
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
-  const [loading, setLoading] = useState(!!orderId);
+  const [downloadToken, setDownloadToken] = useState<string | null>(legacyToken);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!orderId) {
+    if (reference) {
+      // Paystack redirect flow — verify payment and get download token
+      const verify = async () => {
+        try {
+          const res = await fetch(`/api/verify-payment?reference=${encodeURIComponent(reference)}`);
+          const data = await res.json();
+          if (!res.ok) {
+            setError(data.error || 'Could not verify payment.');
+            setLoading(false);
+            return;
+          }
+          setOrder(data.order as Order);
+          const rows = (data.items as OrderItemRow[]) || [];
+          setItems(rows.map((row) => ({
+            ...row,
+            patches: Array.isArray(row.patches) ? row.patches[0] ?? null : row.patches ?? null,
+          })));
+          setDownloadToken(data.download_token || null);
+        } catch {
+          setError('Could not verify payment. Please contact support.');
+        }
+        setLoading(false);
+      };
+      verify();
+    } else if (legacyOrderId) {
+      // Legacy flow fallback
       setLoading(false);
-      return;
+    } else {
+      setLoading(false);
     }
-    const load = async () => {
-      const { data: orderData } = await supabase
-        .from('orders')
-        .select('id, email, total_cents, currency, status')
-        .eq('id', orderId)
-        .single();
-      if (orderData) setOrder(orderData as Order);
+  }, [reference, legacyOrderId]);
 
-      const { data: itemsData } = await supabase
-        .from('order_items')
-        .select(`
-          id, order_id, patch_id, quantity, price_cents,
-          patches ( id, name )
-        `)
-        .eq('order_id', orderId);
-      const rows = (itemsData as OrderItemRow[] | null) || [];
-      setItems(rows.map((row) => ({
-        ...row,
-        patches: Array.isArray(row.patches) ? row.patches[0] ?? null : row.patches ?? null,
-      })));
-      setLoading(false);
-    };
-    load();
-  }, [orderId]);
+  const downloadUrl = downloadToken
+    ? `/api/download?token=${encodeURIComponent(downloadToken)}`
+    : null;
 
-  const downloadUrl = () => {
-    return `/api/download?token=${encodeURIComponent(token || '')}`;
-  };
-
-  if (!orderId) {
+  if (!reference && !legacyOrderId) {
     return (
       <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
         <SiteNav />
         <div className="pt-14 md:pt-16" />
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
           <h1 className="text-page-title text-[var(--text-primary)]">Missing order</h1>
-          <p className="mt-2 text-body-sm text-[var(--text-muted)]">No order ID provided.</p>
+          <p className="mt-2 text-body-sm text-[var(--text-muted)]">No payment reference provided.</p>
           <Link href="/marketplace" className="mt-6 inline-block text-link-accent hover:underline">Back to store</Link>
         </div>
       </main>
@@ -90,8 +97,23 @@ function ThankYouContent() {
       <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
         <SiteNav />
         <div className="pt-14 md:pt-16" />
-        <div className="max-w-lg mx-auto px-4 py-16 flex justify-center">
+        <div className="max-w-lg mx-auto px-4 py-16 flex flex-col items-center">
           <LogoLoader size="md" />
+          <p className="mt-4 text-body-sm text-[var(--text-secondary)]">Verifying your payment…</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
+        <SiteNav />
+        <div className="pt-14 md:pt-16" />
+        <div className="max-w-lg mx-auto px-4 py-16 text-center">
+          <h1 className="text-page-title text-[var(--text-primary)]">Payment issue</h1>
+          <p className="mt-2 text-body-sm text-[var(--text-muted)]">{error}</p>
+          <Link href="/marketplace" className="mt-6 inline-block text-link-accent hover:underline">Back to store</Link>
         </div>
       </main>
     );
@@ -123,7 +145,7 @@ function ThankYouContent() {
             Thanks for your purchase
           </h1>
           <p className="mt-2 text-body-sm text-[var(--text-secondary)] text-center">
-            Your order is confirmed. Download your sample packs below.
+            Your payment is confirmed. Download your sample packs below.
           </p>
 
           <ul className="mt-8 space-y-4">
@@ -135,9 +157,9 @@ function ThankYouContent() {
                   className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-[var(--border-subtle)] last:border-0"
                 >
                   <span className="text-body-sm font-semibold text-[var(--text-primary)]">{name}</span>
-                  {token ? (
+                  {downloadUrl ? (
                     <a
-                      href={downloadUrl()}
+                      href={downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="shrink-0 px-4 py-2 rounded-lg text-body-sm font-semibold bg-[var(--accent-solid)] text-white hover:opacity-90 transition active:scale-[0.98]"
@@ -145,7 +167,7 @@ function ThankYouContent() {
                       Download
                     </a>
                   ) : (
-                    <span className="text-body-sm text-[var(--text-muted)]">Download link missing</span>
+                    <span className="text-body-sm text-[var(--text-muted)]">Download link not ready yet</span>
                   )}
                 </li>
               );
