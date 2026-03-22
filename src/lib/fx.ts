@@ -13,7 +13,9 @@ export async function getUsdToNgnRate(): Promise<number> {
     return rate;
   } catch {
     if (fallback && Number.isFinite(fallback) && fallback > 0) return fallback;
-    throw new Error('FX rate unavailable');
+    // Last resort so checkout never hard-fails if FX API is down and env not set.
+    console.warn('[fx] Using built-in USD→NGN fallback 1550; set FX_USD_NGN_FALLBACK for production.');
+    return 1550;
   }
 }
 

@@ -46,22 +46,40 @@ export async function POST(request: Request) {
       paystackAmountMinor = usdCentsToNgnKobo(baseAmountMinor, fxRate);
     }
 
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        email: buyerEmail,
-        total_cents: paystackAmountMinor,
-        currency: paystackCurrency,
-        charged_currency: paystackCurrency,
-        charged_amount_minor: paystackAmountMinor,
-        usd_price_cents: baseCurrency === 'USD' ? baseAmountMinor : null,
-        fx_rate: fxRate,
-        status: 'pending',
-      })
-      .select('id')
-      .single();
+    if (paystackAmountMinor <= 0) {
+      return NextResponse.json({ error: 'Invalid pack price.' }, { status: 400 });
+    }
+
+    const fullOrderRow = {
+      email: buyerEmail,
+      total_cents: paystackAmountMinor,
+      currency: paystackCurrency,
+      charged_currency: paystackCurrency,
+      charged_amount_minor: paystackAmountMinor,
+      usd_price_cents: baseCurrency === 'USD' ? baseAmountMinor : null,
+      fx_rate: fxRate,
+      status: 'pending' as const,
+    };
+
+    let { data: order, error: orderError } = await supabase.from('orders').insert(fullOrderRow).select('id').single();
+
+    // If Phase 2 columns are missing, retry minimal row (run supabase/paystack-phase2.sql for full behavior).
+    if (orderError) {
+      console.error('[paystack/initialize] orders insert (full) failed:', orderError.message, orderError);
+      ({ data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          email: buyerEmail,
+          total_cents: paystackAmountMinor,
+          currency: paystackCurrency,
+          status: 'pending',
+        })
+        .select('id')
+        .single());
+    }
 
     if (orderError || !order) {
+      console.error('[paystack/initialize] orders insert (minimal) failed:', orderError?.message, orderError);
       return NextResponse.json({ error: 'Could not start checkout right now. Please try again.' }, { status: 500 });
     }
 
@@ -94,8 +112,9 @@ export async function POST(request: Request) {
       body: JSON.stringify(payload),
     });
 
-    const paystackJson = await paystackRes.json();
+    const paystackJson = (await paystackRes.json()) as { status?: boolean; message?: string; data?: { authorization_url?: string; reference?: string } };
     if (!paystackRes.ok || !paystackJson?.status || !paystackJson?.data?.authorization_url) {
+      console.error('[paystack/initialize] Paystack API error:', paystackRes.status, paystackJson?.message, paystackJson);
       return NextResponse.json({ error: 'Could not open payment page. Please try again.' }, { status: 500 });
     }
 
@@ -109,7 +128,8 @@ export async function POST(request: Request) {
       reference,
       order_id: order.id,
     });
-  } catch {
+  } catch (e) {
+    console.error('[paystack/initialize] unexpected:', e);
     return NextResponse.json({ error: 'Could not start checkout right now. Please try again.' }, { status: 500 });
   }
 }
